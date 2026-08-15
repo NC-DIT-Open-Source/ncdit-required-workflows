@@ -31,17 +31,12 @@
 #   Variable  AWS_REGION                = us-east-1 (or your Bedrock region)            (bedrock mode)
 #   Secret    CLAUDE_CODE_OAUTH_TOKEN   = sk-ant-oat...                                 (oauth mode)
 #
-# Optional tuning variables, all with safe defaults — see
-# docs/claude-security-org-rollout.md:
+# Optional tuning variables, all with safe defaults — see README.md:
 #   CLAUDE_SECURITY_TIMEOUT_POLICY  warn | block           (default warn)
 #   CLAUDE_SECURITY_MAX_FILES       filtered file cap      (default 80)
 #   CLAUDE_SECURITY_MAX_LINES       filtered line cap      (default 12000)
 #   CLAUDE_SECURITY_MAX_FILE_LINES  per-file line cap      (default 2000)
 #   CLAUDE_SECURITY_DEBUG           true to log all agent output (default false)
-#
-# VISIBILITY: as a required workflow this only runs in repos at or below this
-# repo's visibility. This repo is INTERNAL, so PUBLIC repos are not covered and
-# need their own copy. See docs/claude-security-org-rollout.md.
 #
 # The router step embeds security-router/route_scan.py. Do NOT edit that block by hand —
 # change the source and run `python3 security-router/embed.py`. CI enforces this.
@@ -79,18 +74,28 @@ jobs:
     permissions:
       contents: read
       security-events: write # upload SARIF so findings land in the Security tab
+      # upload-sarif also reads the workflow run via the API; without this it dies with
+      # "Resource not accessible by integration". Job-level permissions REPLACE the
+      # workflow-level set, so everything this job needs has to be listed here.
+      actions: read
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
-      # Everything Trivy can do in one pass: dependency CVEs, IaC and Dockerfile
-      # misconfiguration, embedded secrets, and license posture. Misconfiguration is the real
-      # gap it fills — CodeQL does SAST, Dependabot does dependency versions, and GitHub secret
-      # scanning with push protection is already enabled org-wide, but nothing else looks at
-      # Terraform, CloudFormation, Kubernetes or Dockerfiles.
-      - name: Trivy — vulnerabilities, misconfiguration, secrets, licenses
+      # Everything Trivy can do: dependency CVEs, IaC and Dockerfile misconfiguration, embedded
+      # secrets, and license posture. Misconfiguration is the real gap it fills — CodeQL does
+      # SAST, Dependabot does dependency versions, and GitHub secret scanning with push
+      # protection is already enabled org-wide, but nothing else looks at Terraform,
+      # CloudFormation, Kubernetes or Dockerfiles.
+      #
+      # TWO invocations, deliberately. With `format: sarif` the action ignores the `severity`
+      # input entirely — it logs "Building SARIF report with all severities" — so a combined
+      # run with `exit-code: 1` blocks on LOW and INFO findings. That is how this gate first
+      # failed mock-carolina: clean at CRITICAL/HIGH, blocked by a LOW. Table format also
+      # prints the findings into the log, which a SARIF-only run does not.
+      - name: Trivy — gate on CRITICAL/HIGH
         id: trivy
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
@@ -100,11 +105,24 @@ jobs:
           severity: CRITICAL,HIGH
           ignore-unfixed: true # an unfixable CVE is not something this PR can act on
           exit-code: "1"
+          format: table
+
+      # Every severity, and it never blocks — the Security tab is for triage, not gating.
+      # `always()` so findings still reach it when the gate above failed, which is when they
+      # matter most.
+      - name: Trivy — SARIF for the Security tab
+        id: trivy_sarif
+        if: always()
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,misconfig,secret,license
+          exit-code: "0"
           format: sarif
           output: trivy.sarif
+          skip-setup-trivy: true # the binary is already installed and cached by the step above
 
-      # `always()` so the findings reach the Security tab even when the step above failed —
-      # which is exactly when they matter.
       - name: Upload Trivy SARIF
         if: always() && hashFiles('trivy.sarif') != ''
         uses: github/codeql-action/upload-sarif@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd # v4
@@ -116,7 +134,12 @@ jobs:
       # formatting trains people to ignore it, and this one is load-bearing — it gates the
       # scan. Each tool runs only if the repo actually contains that kind of file, so a
       # Python-only repo is not failed by a missing Dockerfile and vice versa.
+      # `always()`: a Trivy failure must not hide the lint results. Otherwise you fix Trivy,
+      # push, and only then discover the lint errors — one round trip per class of problem,
+      # which defeats the point of putting the cheap checks first.
       - name: Lint — errors only, and only what this repo contains
+        id: lint
+        if: always()
         shell: bash
         run: |
           set -uo pipefail
@@ -178,6 +201,8 @@ jobs:
         shell: bash
         env:
           TRIVY: ${{ steps.trivy.outcome }}
+          TRIVY_SARIF: ${{ steps.trivy_sarif.outcome }}
+          LINTED: ${{ steps.lint.outcome }}
         run: |
           set -uo pipefail
           {
@@ -185,8 +210,9 @@ jobs:
             echo
             echo "| Check | Result |"
             echo "|-------|--------|"
-            echo "| Trivy (vuln, misconfig, secret, license) | \`${TRIVY:-skipped}\` |"
-            echo "| Lint (errors only) | see the step above |"
+            echo "| Trivy gate (CRITICAL/HIGH) | \`${TRIVY:-skipped}\` |"
+            echo "| Trivy SARIF -> Security tab | \`${TRIVY_SARIF:-skipped}\` |"
+            echo "| Lint (errors only) | \`${LINTED:-see the step above}\` |"
             echo
             echo "These run before the AI review so a decidable failure costs minutes instead"
             echo "of a full scan. CodeQL runs in parallel as its own required check."
