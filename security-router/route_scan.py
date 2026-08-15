@@ -469,6 +469,35 @@ def main():
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
     lines = ["### Claude Security — scan route", ""]
     if kept:
+        # Lead with the expected duration. This step finishes in seconds, so the banner is on
+        # screen for the whole scan -- and the Actions UI shows elapsed time but never expected
+        # time, which is how a long-but-healthy AI review gets mistaken for a hung job and
+        # cancelled. Measured runs are the basis for the range, not a guess.
+        fast_path = len(kept) <= 5 and kept_lines <= 300 and effort == "medium"
+        if fast_path:
+            headline = "**Expect roughly 5-10 minutes.**"
+            because = (
+                "This diff is inside the scanner's fast path (at most 5 files and 300 changed"
+                " lines), so it takes the short route."
+            )
+        else:
+            headline = "**Expect 15-60 minutes, up to a %d-minute cap.**" % step_timeout
+            because = (
+                "This diff is outside the scanner's fast path (over 5 files or 300 changed"
+                " lines), so the full review runs. Runtime scales with how many top-level areas"
+                " are in scope rather than with line count."
+            )
+        lines += [
+            "> [!NOTE]",
+            "> %s %s" % (headline, because),
+            ">",
+            "> A long run is normal and is *not* a hang — please do not cancel it. If the scan"
+            " genuinely",
+            "> exceeds its %d-minute budget the step is killed on its own and reports an"
+            % step_timeout,
+            "> infrastructure timeout, worded to be distinguishable from a security finding.",
+            "",
+        ]
         lines.append(
             "Scanning **%d of %d** changed files (%d lines) at `--effort %s`, "
             "%s gate, %d-minute step cap."
@@ -491,6 +520,20 @@ def main():
     if summary:
         with open(summary, "a", encoding="utf-8") as fh:
             fh.write("\n".join(lines) + "\n")
+
+    # A ::notice surfaces on the run page itself, next to the elapsed-time display that is
+    # otherwise the only timing information anyone sees. Emitted before the route JSON so it is
+    # the first thing in the log too, for anything tailing output rather than reading the UI.
+    if kept:
+        print(
+            "::notice title=Claude Security — expected duration::The AI review step that follows "
+            "usually takes %s and is capped at %d minutes. A long run is normal and is NOT a "
+            "hang — do not cancel it. If it exceeds the cap the step is killed on its own and "
+            "reports an infrastructure timeout rather than a finding."
+            % ("5-10 minutes (fast path)"
+               if (len(kept) <= 5 and kept_lines <= 300 and effort == "medium")
+               else "15-60 minutes", step_timeout)
+        )
 
     print("route: %s" % json.dumps({k: v for k, v in route.items() if k != "skipped"}))
     for n in notes:

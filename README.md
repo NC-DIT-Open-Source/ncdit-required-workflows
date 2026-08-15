@@ -74,6 +74,35 @@ Optional, all with working defaults:
 | `CLAUDE_SECURITY_MAX_FILE_LINES` | `2000` | A file above this is still scanned, but pulls effort down to `low`. |
 | `CLAUDE_SECURITY_DEBUG` | unset | `true` re-enables `show_full_output`. Off by default: it logs all tool results, which on a public repo means publicly. |
 
+## How long should a run take?
+
+**A run over 30 minutes is normal. It is not hung. Do not cancel it.**
+
+This is the single most common misreading of this workflow — the Actions UI shows *elapsed*
+time and never *expected* time, so a healthy AI review looks identical to a stuck job.
+
+| Diff shape | Expect |
+|---|---|
+| ≤5 files **and** ≤300 changed lines | 5–10 min (the scanner's fast path) |
+| anything larger | 15–60 min, capped at 90 into the default branch, 30 elsewhere |
+| `precheck` alone | 30–60 s |
+
+The 300-line boundary is a **cliff**, not a slope — measured: 1 file / 4 lines took 6m07s, while
+1 file / 387 lines took 40m39s, because the second one falls outside the fast path and runs the
+full review. Runtime then scales with the number of top-level **areas** in scope rather than
+line count: 1 area ran 16–41 min, 4 areas ran 57 min.
+
+Every run tells you this itself, in three places, so you should not have to come here:
+
+- the **run title** ("allow up to 90 min (not hung)");
+- a **`::notice`** on the run page with the expected range for that specific diff;
+- a **banner at the top of the job summary**, written seconds in and on screen for the whole run.
+
+If a scan genuinely exceeds its budget the step is killed on its own and says
+`scan infrastructure timeout … this is NOT a security finding`, which is deliberately worded to
+be distinguishable from a real finding. With `CLAUDE_SECURITY_TIMEOUT_POLICY=warn` (the default)
+that does not block the merge.
+
 ### Why the caps are 20 / 3000
 
 Measured, not guessed. At `medium` the plugin runs its full component matrix for anything
