@@ -278,8 +278,16 @@ def main():
         extra = open(sys.argv[2], encoding="utf-8", errors="replace").read()
 
     max_file_lines = int(os.environ.get("MAX_FILE_LINES") or 2000)
-    max_files = int(os.environ.get("MAX_FILES") or 80)
-    max_lines = int(os.environ.get("MAX_LINES") or 12000)
+    # Calibrated against measured runtime rather than guessed. At `medium` the plugin runs its
+    # full component matrix for anything outside its own fast path (<=5 files AND <=300 lines),
+    # and observed wall-clock tracks the number of top-level areas in scope far more than the
+    # line count: 1 area took 16-41 min, 4 areas took 57 min -- 63% of the 90-minute step
+    # budget. A release-shaped diff spans ~10 areas and would blow past it. 20/3000 routes those
+    # to `low` before they can time out, and leaves genuinely small changes at `medium`.
+    # Raise them only with runtime evidence; the failure mode of setting them too high is the
+    # 2-hour wedge this router exists to prevent.
+    max_files = int(os.environ.get("MAX_FILES") or 20)
+    max_lines = int(os.environ.get("MAX_LINES") or 3000)
     base_ref = os.environ.get("BASE_REF") or ""
     default_branch = os.environ.get("DEFAULT_BRANCH") or ""
 

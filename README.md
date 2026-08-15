@@ -69,10 +69,35 @@ Optional, all with working defaults:
 | Variable | Default | Effect |
 |----------|---------|--------|
 | `CLAUDE_SECURITY_TIMEOUT_POLICY` | `warn` | `warn`: a scan that trips its step timeout reports loudly and does not block. `block`: it fails closed. |
-| `CLAUDE_SECURITY_MAX_FILES` | `80` | Filtered-diff file cap; above it, effort drops rather than coverage. |
-| `CLAUDE_SECURITY_MAX_LINES` | `12000` | Same, on changed lines. |
+| `CLAUDE_SECURITY_MAX_FILES` | `20` | Filtered-diff file cap; above it, effort drops rather than coverage. |
+| `CLAUDE_SECURITY_MAX_LINES` | `3000` | Same, on changed lines. |
 | `CLAUDE_SECURITY_MAX_FILE_LINES` | `2000` | A file above this is still scanned, but pulls effort down to `low`. |
 | `CLAUDE_SECURITY_DEBUG` | unset | `true` re-enables `show_full_output`. Off by default: it logs all tool results, which on a public repo means publicly. |
+
+### Why the caps are 20 / 3000
+
+Measured, not guessed. At `medium` the plugin runs its full component matrix for anything
+outside its own fast path (≤5 files **and** ≤300 lines), and observed wall-clock tracks the
+number of top-level areas in scope far more than the line count:
+
+| PR | files | lines | areas in scope | scan |
+|---|---|---|---|---|
+| `Public-Comment-Analyzer` #193 | 1 | 404 | 1 | 16m20s |
+| `mock-carolina` #63 (1st) | 1 | 387 | 1 | 40m39s |
+| `mock-carolina` #63 (2nd) | 4 | 656 | 4 | **57m01s** |
+| `mock-carolina` #56 (pre-filter) | 126 | 31,576 | 12 | 1h26m, then a 2h kill |
+
+57 minutes on a **four-file** diff is 63% of the 90-minute step budget. A release-shaped diff
+spans roughly ten areas and would exceed it. The earlier 80 / 12,000 defaults did **not** trip
+on that shape — post-filter it is 65 files / 9,151 lines — so it would have run at `medium` and
+probably timed out, which is the failure this router exists to prevent.
+
+Raise these only with runtime evidence. Setting them too high does not fail loudly; it fails as
+a timeout, and with `CLAUDE_SECURITY_TIMEOUT_POLICY=warn` that is a pass.
+
+> A file/line cap is a proxy for what actually drives cost. The more predictive control would
+> be a cap on the **number of top-level areas** in scope; that is a router change, tracked
+> separately rather than guessed at here.
 
 ## Skipped by design
 
