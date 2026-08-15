@@ -1,0 +1,74 @@
+# Tests for the Claude Security scan router.
+#
+# The router decides what the org-wide security scan reads and how deep it goes, so a
+# regression here silently weakens the gate in every repo. It also has to be inlined into
+# the workflow YAML (the required workflow is injected into repos that hold no file of their
+# own), so this also fails on drift between the canonical source and the embedded copies.
+name: Security router tests
+
+on:
+  pull_request:
+    paths:
+      - "security-router/**"
+      - ".github/workflows/pr-security-gate.yml"
+      - ".github/workflows/security-router-tests.yml"
+  push:
+    branches: [main]
+    paths:
+      - "security-router/**"
+      - ".github/workflows/pr-security-gate.yml"
+      - ".github/workflows/security-router-tests.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Only needed to extract a step's `run:` block out of the workflow for the gate test.
+      - name: Install PyYAML
+        run: python3 -m pip install --quiet pyyaml
+
+      - name: Router unit tests
+        run: python3 security-router/test_route.py
+
+      # The router is inlined into a bash heredoc, so a source line that terminates the
+      # sentinel would hand the rest of the file to bash in a privileged step. That escape
+      # compiles and passes the router tests, so it needs its own gate.
+      - name: Embedder tests
+        run: python3 security-router/test_embed.py
+
+      # Drives every branch of the gate, including both timeout policies, without waiting
+      # out a real 90-minute step budget.
+      - name: Gate branch tests
+        run: bash security-router/test_gate.sh .github/workflows/pr-security-gate.yml
+
+      # The embedded copy must match the canonical source, or the tests above are testing
+      # code that is not what runs.
+      - name: Embedded router is in sync
+        run: python3 security-router/embed.py --check
+
+      - name: Workflows parse
+        run: |
+          set -uo pipefail
+          for f in .github/workflows/*.yml; do
+            python3 -c 'import sys,yaml; yaml.safe_load(open(sys.argv[1],encoding="utf-8"))' "$f" \
+              || { echo "::error title=Security router tests::$f is not valid YAML"; exit 1; }
+            echo "ok $f"
+          done
+
+      # A tag-pinned action in the workflow that gates every PR in the org would let an
+      # upstream tag move under us.
+      - name: Actions in pr-security-gate.yml are SHA-pinned
+        run: |
+          set -uo pipefail
+          if grep -n "uses:" .github/workflows/pr-security-gate.yml | grep -vE "@[0-9a-f]{40} #"; then
+            echo "::error title=Security router tests::the lines above are not pinned to a 40-character commit SHA with a version comment"
+            exit 1
+          fi
+          echo "All actions SHA-pinned."

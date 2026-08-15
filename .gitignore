@@ -1,0 +1,4 @@
+
+# Python bytecode from the security-router tests
+__pycache__/
+*.pyc
