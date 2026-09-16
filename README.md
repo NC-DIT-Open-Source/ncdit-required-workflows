@@ -73,6 +73,21 @@ Optional, all with working defaults:
 | `CLAUDE_SECURITY_MAX_LINES` | `3000` | Same, on changed lines. |
 | `CLAUDE_SECURITY_MAX_FILE_LINES` | `2000` | A file above this is still scanned, but pulls effort down to `low`. |
 | `CLAUDE_SECURITY_DEBUG` | unset | `true` re-enables `show_full_output`. Off by default: it logs all tool results, which on a public repo means publicly. |
+| `CLAUDE_SECURITY_MAX_BUDGET_USD` | unset | Optional per-invocation model-spending cap for the scan. Configure together with the report cap. |
+| `CLAUDE_SECURITY_REPORT_MAX_BUDGET_USD` | unset | Optional per-invocation model-spending cap for the report-posting helper. Configure together with the scan cap. |
+
+Set spending caps as **repository variables** to bound a particular project's
+reviews without changing other repositories. Both must be positive USD amounts
+below 1000, with at most two decimal places (for example, `18.00` and `0.50`).
+Invalid or incomplete configuration fails before inference. Leaving both unset
+preserves existing behavior. The caps apply to each invocation; callers still
+need to budget repeated runs and any separate repository review workflows.
+
+A configured scan that does not complete successfully fails closed, including
+when a partial report exists or the failure occurs near the timeout window.
+Exhausting a spending cap does not establish a clean security review or reduce
+the scope being scanned. If the bounded report helper cannot post, the existing
+deterministic comment fallback still publishes the findings.
 
 ## How long should a run take?
 

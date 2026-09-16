@@ -232,6 +232,8 @@ jobs:
   scan:
     needs: precheck
     runs-on: ubuntu-latest
+    outputs:
+      report_budget_args: ${{ steps.budget.outputs.report_args }}
     # Backstop only. The real bound is `timeout-minutes` on the scan step (90 min into the
     # default branch, 30 min otherwise), which fails that STEP and lets the job continue to
     # the gate and the report job. A job-level kill cancels the runner mid-flight, so the
@@ -984,6 +986,31 @@ jobs:
 
           rm -f cs-numstat.z cs-ignore.txt
 
+      - name: Validate optional review spending caps
+        id: budget
+        if: steps.guard.outputs.scan == 'true' && steps.route.outputs.should_scan == 'true'
+        env:
+          SCAN_BUDGET_USD: ${{ vars.CLAUDE_SECURITY_MAX_BUDGET_USD }}
+          REPORT_BUDGET_USD: ${{ vars.CLAUDE_SECURITY_REPORT_MAX_BUDGET_USD }}
+        run: |
+          python3 - <<'PY'
+          import os, re
+          from decimal import Decimal
+          scan = os.environ.get("SCAN_BUDGET_USD", "")
+          report = os.environ.get("REPORT_BUDGET_USD", "")
+          if bool(scan) != bool(report):
+              raise SystemExit("Configure both scan and report spending caps, or leave both unset.")
+          args = {}
+          for name, value in (("scan_args", scan), ("report_args", report)):
+              if value and (not re.fullmatch(r"[0-9]{1,3}(?:\.[0-9]{1,2})?", value)
+                            or Decimal(value) <= 0):
+                  raise SystemExit("Review spending caps must be positive USD amounts below 1000 with at most two decimal places.")
+              args[name] = "--max-budget-usd " + value if value else ""
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              for name, value in args.items():
+                  output.write(name + "=" + value + "\n")
+          PY
+
       # --- Bedrock mode only: exchange the GitHub OIDC token for AWS creds ---
       - name: Configure AWS credentials (Bedrock)
         if: steps.guard.outputs.scan == 'true' && steps.route.outputs.should_scan == 'true' && vars.CLAUDE_AUTH_MODE == 'bedrock'
@@ -1059,7 +1086,20 @@ jobs:
           # better.
           claude_args: >-
             --max-turns 200
+            ${{ steps.budget.outputs.scan_args }}
             --allowedTools "Bash(git log:*),Bash(git diff:*),Bash(git rev-parse:*),Bash(git merge-base:*),Bash(git show:*)"
+
+      # A bounded review must finish successfully, even if it left a partial
+      # report or failed near the generic timeout warning window.
+      - name: Require bounded scan completion
+        if: always() && steps.budget.outputs.scan_args != ''
+        env:
+          SCAN_OUTCOME: ${{ steps.scan.outcome }}
+        run: |
+          if [ "$SCAN_OUTCOME" != "success" ]; then
+            echo "::error::The spending-limited security scan did not complete successfully. No clean review is established."
+            exit 1
+          fi
 
       # Hand the report to the `report` job. Artifacts are the only channel that
       # survives the job boundary, and the boundary is the point: a new job gets a
@@ -1440,6 +1480,7 @@ jobs:
             echo
             for r in report/claude-security-route.json report/*/claude-security-route.json; do
               if [ -s "$r" ]; then
+                # shellcheck disable=SC2016 # Backticks belong to the literal Markdown emitted by Python.
                 python3 -c 'import json,sys; d=json.load(open(sys.argv[1],encoding="utf-8")); print("_Scanned %d of %d changed files (%d lines) at `--effort %s`; skipped %d generated file(s)._" % (d.get("kept_files",0), d.get("changed_files",0), d.get("kept_lines",0), d.get("effort","?"), d.get("skipped_files",0)))' "$r" || true
                 echo
                 break
@@ -1484,6 +1525,7 @@ jobs:
             report whether it succeeded, and stop.
           claude_args: >-
             --max-turns 6
+            ${{ needs.scan.outputs.report_budget_args }}
             --allowedTools "Bash(gh pr comment:*),Read"
 
       # Fallback: if the agent could not post, get the findings onto the PR anyway
