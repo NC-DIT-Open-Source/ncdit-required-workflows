@@ -48,6 +48,9 @@ jobs:
       - name: Gate branch tests
         run: bash security-router/test_gate.sh .github/workflows/pr-security-gate.yml
 
+      - name: Optional spending cap tests
+        run: python3 security-router/test_budget.py
+
       # The embedded copy must match the canonical source, or the tests above are testing
       # code that is not what runs.
       - name: Embedded router is in sync
