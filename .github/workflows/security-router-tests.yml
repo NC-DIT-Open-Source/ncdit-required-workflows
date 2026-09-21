@@ -40,6 +40,9 @@ jobs:
       # The router is inlined into a bash heredoc, so a source line that terminates the
       # sentinel would hand the rest of the file to bash in a privileged step. That escape
       # compiles and passes the router tests, so it needs its own gate.
+      - name: Trusted Trivy contract and non-CyberCoach parity tests
+        run: python3 -B security-router/test_trivy_contract.py
+
       - name: Embedder tests
         run: python3 security-router/test_embed.py
 
