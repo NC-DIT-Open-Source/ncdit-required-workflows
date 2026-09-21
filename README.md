@@ -180,3 +180,70 @@ the gate:
    not agree with it about `set -u`.
 4. `actionlint .github/workflows/*.yml`
 5. Keep every `uses:` pinned to a 40-character commit SHA with a version comment. CI enforces it.
+
+## CyberCoach terminal S3 receiver contract
+
+The CyberCoach-only precheck uses the owner-maintained
+`security-router/trivy_contract.py`, generated into the required workflow by
+`security-router/embed.py`. It never imports code or policy from the target PR.
+Every other repository retains the existing Trivy action, parameters, exit
+behavior and summary selection.
+
+Contract `ncdit-cybercoach-terminal-s3-receivers-v1` accepts only two exact
+AWS-0132 HIGH findings for terminal SSE-S3 server-access-log receivers. It
+requires the paired AWS-0089 no-recursion findings and the exact AWS-0010
+CloudFront adapter finding. All five remain in the raw results and SARIF.
+A missing, additional, duplicated or changed IaC finding blocks, as does any
+other HIGH/CRITICAL vulnerability, misconfiguration, secret or license finding.
+
+The policy pins the three reviewed resource files and both occurrence call
+sites by SHA-256. Those bytes were checked at CyberCoach source
+`153a1aac7f3e4fd67f966f02a1fdcb3afce35180`. This is provenance, **not** a permanent
+whole-repository commit restriction: each run must match the actual PR event
+head, record its actual Git tree, and perform a complete fresh scan. Thus an
+unrelated committed source fix can proceed; changes to reviewed IaC bytes,
+call sites or the five findings require an owner-reviewed contract revision.
+Dirty, ignored/untracked, linked or submodule content is rejected.
+
+The CyberCoach path installs SHA-pinned Trivy setup with caching disabled,
+verifies the Linux AMD64 0.70.0 binary hash, and uses a new private cache with
+embedded misconfiguration checks only. Inherited scanner configuration is not
+forwarded. Target config/ignore/secret-rule files cannot govern the decision.
+The trusted empty secret-rule YAML mapping keeps the built-in rules enabled.
+The official archive checksum is recorded as a reviewed release reference;
+the installed binary itself is measured at runtime.
+
+All four scanners run with all severities and the existing ignore-unfixed
+vulnerability policy. A separate config scan must match the filesystem IaC
+projection one-for-one. SARIF is converted from that exact unfiltered full
+JSON, keeping all severities and avoiding a second vulnerability-database
+snapshot. The classifier compares semantic multisets: every rule identity,
+per-result severity/message and exact physical location must correspond to the
+full JSON, including package versions, repeated findings and repeated package
+locations. Result order is immaterial; multiplicity is not. Rule indexes must
+resolve to the stated rule ID. Null/malformed results, same-count substitution,
+suppression fields and explicit unsuccessful invocation/error evidence block.
+The runtime also binds Trivy convert's ROOTPATH to its exact JSON input path.
+LOW/UNKNOWN licenses remain present; unranked licenses cannot disappear merely
+because conversion omitted them. A new converter representation fails closed
+until its contract is reviewed. Scanner, conversion, parser and artifact-upload
+failures all block. Reports are written
+outside the target checkout, never filtered or printed to the job log, and
+retained for seven days with their hashes, scanner exits, actual workflow
+ref/SHA, run identity, target head/tree and decision receipt.
+
+A passing receipt establishes only this scanner policy decision after this
+owner-maintained workflow is approved and merged. It does not establish live
+S3/CloudFront delivery, privacy compliance, AWS permissions or launch readiness.
+This proposal itself grants no exception. The security-policy owner must review
+the exact semantic change and successful **Security router tests** before a
+protected-main merge; the current ruleset's minimum required status is not a
+substitute. A fresh required-workflow run on the published CyberCoach event
+head, with complete retained evidence and no unaccepted HIGH/CRITICAL findings,
+is required before hosted closure.
+
+Run the existing router, gate, budget and embedder tests plus
+`python3 -B security-router/test_trivy_contract.py`,
+`python3 security-router/embed.py --check`, workflow parsing and actionlint.
+Do not edit generated Python in the workflow; the embedder protects both
+canonical sources against every quoted heredoc delimiter and both marker pairs.

@@ -147,6 +147,39 @@ with tempfile.TemporaryDirectory() as td:
 rc = subprocess.run([sys.executable, EMBED, "--check"], capture_output=True, text=True).returncode
 check("--check passes on a clean tree", rc == 0)
 
+
+# Both canonical sources are checked against EVERY delimiter and marker.
+for begin, end, label in ((embed.BEGIN, embed.END, 'router'),
+                          (embed.TRIVY_BEGIN, embed.TRIVY_END, 'trivy')):
+    for sentinel in ('CS_ROUTER_PY', 'CC_TRIVY_PY', 'GATE_PY'):
+        try:
+            embed.render('x = 1\n' + sentinel + '\ny = 2', 10,
+                         {'CS_ROUTER_PY', 'CC_TRIVY_PY', 'GATE_PY'}, begin, end)
+            check(label + ' refuses ' + sentinel, False)
+        except SystemExit:
+            check(label + ' refuses ' + sentinel, True)
+    for marker in embed.MARKERS:
+        try:
+            embed.render(marker, 10, {'CC_TRIVY_PY'}, begin, end)
+            check(label + ' refuses cross-source marker', False)
+        except SystemExit:
+            check(label + ' refuses cross-source marker', True)
+_, updated = embed.splice(WORKFLOW, open(embed.TRIVY, encoding='utf-8').read(),
+                          embed.TRIVY_BEGIN, embed.TRIVY_END)
+check('splicing the trusted Trivy source is idempotent', updated == wf)
+for begin, end in ((embed.BEGIN,embed.END),(embed.TRIVY_BEGIN,embed.TRIVY_END)):
+    with tempfile.TemporaryDirectory() as td:
+        path = os.path.join(td,'wf.yml')
+        for content in ("run: |\n  python3 - <<'X'\n  " + begin + '\n  X\n',
+                        "run: |\n  python3 - <<'X'\n  " + begin + '\n  ' + begin + '\n  ' + end + '\n  X\n'):
+            with open(path,'w',encoding='utf-8') as handle:
+                handle.write(content)
+            try:
+                embed.splice(path,'x = 1',begin,end)
+                check('missing/duplicate named markers rejected',False)
+            except SystemExit:
+                check('missing/duplicate named markers rejected',True)
+
 print()
 if fails:
     print("%d FAILURE(S): %s" % (len(fails), ", ".join(fails)))
