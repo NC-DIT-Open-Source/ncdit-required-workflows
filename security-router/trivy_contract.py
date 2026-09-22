@@ -5,6 +5,7 @@ No target-repository Python, configuration, ignore list or classifier is execute
 A receipt means this scanner contract passed, never AWS delivery/launch readiness.
 """
 from collections import Counter
+import copy
 import hashlib
 import json
 import os
@@ -394,6 +395,51 @@ def classify(fs, config, sarif, conversion_input=None):
                 unaccepted_high_critical_findings=[])
 
 
+def upload_view(fs, config, sarif, conversion_input=None):
+    """Derive an upload view only after the complete, unchanged raw contract.
+
+    Match each result through the native converter projection of its exact
+    accepted JSON identity, including its source/caller contract. Keep every
+    other result, its order, and all SARIF metadata verbatim as JSON values.
+    """
+    decision = classify(fs, config, sarif, conversion_input)
+    accepted = decision['accepted_high_findings']
+    need(len(accepted) == 2 and all(x['rule'] == 'AWS-0132' for x in accepted),
+         'upload-exact-two-classifications')
+    eligible = {}
+    for result in fs['Results']:
+        for finding in result.get('Misconfigurations', []):
+            identity = normalized(result, finding, 'infra/aws/')
+            if identity not in accepted:
+                continue
+            projection = sarif_projection({'Results': [{
+                'Target': result['Target'], 'Class': result['Class'],
+                'Type': result['Type'], 'Misconfigurations': [finding]}]})
+            need(len(projection) == 1 and sum(projection.values()) == 1,
+                 'upload-single-result-projection')
+            key = next(iter(projection))
+            need(key not in eligible, 'upload-duplicate-classification')
+            eligible[key] = identity
+    need(len(eligible) == 2, 'upload-complete-classification')
+    derived = copy.deepcopy(sarif)
+    retained = []
+    removed = []
+    for index, result in enumerate(sarif['runs'][0]['results']):
+        key = canonical(dict(ruleId=result['ruleId'], level=result['level'],
+            message=result['message']['text'], locations=sorted(map(canonical, result['locations']))))
+        if key in eligible:
+            identity = eligible.pop(key)
+            paths = [identity['target'], *(o['filename'] for o in identity['occurrences'])]
+            removed.append(dict(raw_result_index=index,
+                result_sha256=sha(canonical(result).encode()), classification=identity,
+                source_sha256={'infra/aws/' + p: SOURCES['infra/aws/' + p] for p in paths}))
+        else:
+            retained.append(copy.deepcopy(result))
+    need(not eligible and len(removed) == 2, 'upload-exact-removal-inventory')
+    derived['runs'][0]['results'] = retained
+    return decision, derived, removed
+
+
 def scanner(binary, env):
     need(sha(regular(Path(binary), 256 * 1024 * 1024)) == BINARY, 'scanner-binary')
     value = decode(subprocess.check_output([str(binary), '--version', '--format', 'json'], env=environment(env)))
@@ -448,12 +494,21 @@ def execute(root, out, env):
     need(fs.get('Metadata', {}).get('Commit') == before['commit'], 'report-source-commit')
     need(fs.get('ArtifactName') == str(root) and config.get('ArtifactName') == str(root / 'infra/aws'),
          'report-source-root')
-    decision = classify(fs, config, sarif, out / 'filesystem.json')
+    decision, derived, removed = upload_view(fs, config, sarif, out / 'filesystem.json')
+    upload = (canonical(derived) + '\n').encode()
+    # Raw SARIF is immutable evidence; never overwrite it or filter JSON scans.
+    with (out / 'trivy-upload.sarif').open('xb') as handle:
+        handle.write(upload)
+    upload_receipt = dict(raw_sha256=sha(raw['trivy.sarif']), upload_sha256=sha(upload),
+        raw_result_count=len(sarif['runs'][0]['results']),
+        upload_result_count=len(derived['runs'][0]['results']),
+        removed_result_count=len(removed), removed_results=removed)
     return dict(schema='ncdit-trivy-contract-receipt-v2', contract=CONTRACT, status='passed',
         organization_policy_acceptance='established-for-this-contract', **identity, source=before, scanner=tool,
         private_cache_path=str(cache), external_policy_files=[], inherited_trivy_configuration='not-forwarded',
         secret_config_sha256=sha(regular(out / 'secret-config.yaml')),
-        report_sha256={name: sha(data) for name, data in raw.items()}, scanner_exits=exits, **decision)
+        report_sha256={**{name: sha(data) for name, data in raw.items()}, 'trivy-upload.sarif': sha(upload)},
+        sarif_upload=upload_receipt, scanner_exits=exits, **decision)
 
 
 def main():

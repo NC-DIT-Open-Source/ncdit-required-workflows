@@ -12,6 +12,7 @@ import unittest
 from unittest.mock import patch
 import zlib
 import base64
+import zipfile
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
@@ -531,13 +532,15 @@ class Source(unittest.TestCase):
 
 class Runtime(unittest.TestCase):
     def test_scanner_exit_and_report_artifacts_fail_closed(self):
-        for failure in ('scanner','missing','malformed','linked','policy','source-change','report-commit','report-root',None):
+        for failure in ('scanner','missing','malformed','linked','policy','source-change','report-commit','report-root','classification','sarif-duplicate',None):
             with self.subTest(failure=failure),tempfile.TemporaryDirectory() as temp:
                 out=Path(temp).resolve();root=out/'target';root.mkdir();env=env_fixture(root,out);fs,config,sarif=reports()
                 identities=[dict(commit='a'*40),dict(commit='b'*40) if failure=='source-change' else dict(commit='a'*40)]
                 fs['ArtifactName']=str(root);config['ArtifactName']=str(root/'infra/aws')
                 if failure=='report-commit':fs['Metadata']['Commit']='f'*40
                 if failure=='report-root':fs['ArtifactName']='/foreign'
+                if failure=='classification':fs['Results'][0].setdefault('Secrets', []).append({'Severity':'HIGH'})
+                if failure=='sarif-duplicate':sarif['runs'][0]['results'].append(copy.deepcopy(sarif['runs'][0]['results'][0]))
                 invocations=[]
                 def run(argv,**kwargs):
                     invocations.append(argv)
@@ -557,9 +560,24 @@ class Runtime(unittest.TestCase):
                         receipt=c.execute(root,out,env)
                         self.assertEqual(receipt['status'],'passed')
                         self.assertEqual(receipt['schema'],'ncdit-trivy-contract-receipt-v2')
-                        self.assertEqual(len(receipt['report_sha256']),3)
+                        self.assertEqual(len(receipt['report_sha256']),4)
+                        self.assertEqual(receipt['sarif_upload']['removed_result_count'],2)
+                        self.assertTrue((out/'trivy-upload.sarif').is_file())
+                        upload = c.decode((out/'trivy-upload.sarif').read_bytes())
+                        proof = receipt['sarif_upload']
+                        self.assertEqual(proof['raw_sha256'], c.sha((out/'trivy.sarif').read_bytes()))
+                        self.assertEqual(proof['upload_sha256'], c.sha((out/'trivy-upload.sarif').read_bytes()))
+                        self.assertEqual(receipt['report_sha256']['trivy-upload.sarif'], proof['upload_sha256'])
+                        self.assertEqual(proof['raw_result_count'], len(sarif['runs'][0]['results']))
+                        self.assertEqual(proof['upload_result_count'], proof['raw_result_count'] - 2)
+                        self.assertEqual(c.decode((out/'trivy.sarif').read_bytes()), sarif)
+                        indices = {r['raw_result_index'] for r in proof['removed_results']}
+                        self.assertEqual(upload['runs'][0]['results'],
+                                         [r for i, r in enumerate(sarif['runs'][0]['results']) if i not in indices])
                         self.assertEqual(len(receipt['scanner_exits']),3)
                         self.assertEqual(receipt['organization_policy_acceptance'],'established-for-this-contract')
+                if failure:
+                    self.assertFalse((out/'trivy-upload.sarif').exists())
                 if failure=='scanner':
                     self.assertEqual(len(invocations),1)
                     self.assertEqual(c.decode((out/'scanner-exits.json').read_bytes())[0]['exit_code'],9)
@@ -636,6 +654,132 @@ class Workflow(unittest.TestCase):
     def test_nonprecheck_jobs_unchanged(self):
         for name,digest in DATA['other_jobs'].items():
             self.assertEqual(c.sha(c.canonical(self.workflow['jobs'][name]).encode()),digest,name)
+
+
+# Retained original R26 artifact and derived-upload controls.
+ARTIFACT = HERE / 'fixtures/r26-trivy-10716525352.zip'
+RAW_HASHES = {
+    'filesystem.json': '339c244a84ff9472b18d36df222e9d9a93feadd02ff0d9623fee36d2a9555642',
+    'config.json': 'af258ced0c36ed4353a72a119906aac6c2dfe3e77c385603b1089ccc81d16d9b',
+    'trivy.sarif': '527ed8744669c0522b5c6f0e2448c005d5a0017dd19b3e609747d87ddc2eec53',
+    'receipt.json': '076b81fe9ac5ae22427ebaa2937bfc001aa78281d8c1fbddc59d7b9d92692321',
+}
+
+
+def raw_reports():
+    with zipfile.ZipFile(ARTIFACT) as z:
+        return tuple(c.decode(z.read(n)) for n in ('filesystem.json', 'config.json', 'trivy.sarif'))
+
+
+class UploadView(unittest.TestCase):
+    def test_original_artifact_provenance_and_exact_lossless_reconstruction(self):
+        self.assertEqual(c.sha(ARTIFACT.read_bytes()),
+                         'b5c08cdd26bfa8cfffa4fc7c62804ee492e46b4b24ffefff92bc929af7d7b9f4')
+        with zipfile.ZipFile(ARTIFACT) as z:
+            for name, digest in RAW_HASHES.items():
+                self.assertEqual(c.sha(z.read(name)), digest)
+            receipt = c.decode(z.read('receipt.json'))
+        self.assertEqual(receipt['source']['source_sha256'], c.SOURCES)
+        self.assertEqual(receipt['event_head'], '045899886f05f10eda97e6cd5eb1b0ef1a65fe43')
+        self.assertEqual(receipt['workflow_sha'], 'c1dbf82e2decd82f364c25db81f740b59f4a10e7')
+        fs, config, sarif = raw_reports()
+        before = copy.deepcopy((fs, config, sarif))
+        decision, derived, removed = c.upload_view(fs, config, sarif)
+        self.assertEqual((fs, config, sarif), before)
+        self.assertEqual(decision['accepted_high_findings'], receipt['accepted_high_findings'])
+        results = sarif['runs'][0]['results']
+        self.assertEqual(len(results), 280)
+        self.assertEqual(len(derived['runs'][0]['results']), 278)
+        self.assertEqual(len(removed), 2)
+        self.assertEqual({x['classification']['rule'] for x in removed}, {'AWS-0132'})
+        indices = {x['raw_result_index'] for x in removed}
+        self.assertEqual(len(indices), 2)
+        self.assertEqual(derived['runs'][0]['results'],
+                         [x for i, x in enumerate(results) if i not in indices])
+        reconstructed = copy.deepcopy(derived)
+        for removal in sorted(removed, key=lambda r: r['raw_result_index']):
+            i = removal['raw_result_index']
+            self.assertEqual(c.sha(c.canonical(results[i]).encode()), removal['result_sha256'])
+            self.assertEqual(removal['source_sha256'],
+                             {p: c.SOURCES[p] for p in removal['source_sha256']})
+            reconstructed['runs'][0]['results'].insert(i, results[i])
+        self.assertEqual(reconstructed, sarif)  # includes rules, levels, messages, URI base and order
+        self.assertEqual(c.upload_view(fs, config, sarif), (decision, derived, removed))
+        self.assertEqual(len([x for x in derived['runs'][0]['results'] if x['ruleId'] == 'AWS-0132']), 0)
+
+    def test_each_accepted_identity_field_and_caller_still_block_before_derivation(self):
+        mutations = [
+            lambda r, f: f.update(Severity='CRITICAL'),
+            lambda r, f: f.update(ID='AWS-0999'),
+            lambda r, f: r.update(Target=r['Target'] + '.moved'),
+            lambda r, f: f['CauseMetadata'].update(Resource='foreign'),
+            lambda r, f: f['CauseMetadata'].update(StartLine=1),
+            lambda r, f: f['CauseMetadata'].update(EndLine=999),
+            lambda r, f: f['CauseMetadata'].update(Occurrences=[]),
+        ]
+        for index, change in enumerate(mutations):
+            values = raw_reports()
+            for report in values[:2]:
+                r, f = next((r, f) for r in report['Results'] for f in r.get('Misconfigurations', [])
+                            if f['ID'] == 'AWS-0132' and f['CauseMetadata'].get('Occurrences'))
+                change(r, f)
+            with self.subTest(index=index), self.assertRaises(ValueError):
+                c.upload_view(*values)
+
+    def test_missing_duplicate_moved_malformed_sarif_never_derives(self):
+        for mode in ('missing', 'duplicate', 'moved', 'malformed', 'severity', 'index', 'message'):
+            fs, config, sarif = raw_reports()
+            results = sarif['runs'][0]['results']
+            i = next(i for i, r in enumerate(results) if r['ruleId'] == 'AWS-0132')
+            if mode == 'missing': results.pop(i)
+            elif mode == 'duplicate': results.append(copy.deepcopy(results[i]))
+            elif mode == 'moved': results[i]['locations'][0]['physicalLocation']['region']['startLine'] += 1
+            elif mode == 'malformed': results[i]['suppressions'] = [{'kind': 'external'}]
+            elif mode == 'severity': results[i]['level'] = 'note'
+            elif mode == 'index': results[i]['ruleIndex'] = 9999
+            else: results[i]['message']['text'] += ' altered'
+            with self.subTest(mode=mode), self.assertRaises(ValueError):
+                c.upload_view(fs, config, sarif)
+
+    def test_all_other_high_critical_categories_still_block(self):
+        for kind in ('Vulnerabilities', 'Secrets', 'Licenses'):
+            for severity in ('HIGH', 'CRITICAL'):
+                fs, config, sarif = raw_reports()
+                fs['Results'][0].setdefault(kind, []).append({'Severity': severity})
+                with self.subTest(kind=kind, severity=severity), self.assertRaisesRegex(ValueError, 'unaccepted-high-critical'):
+                    c.upload_view(fs, config, sarif)
+
+    def test_duplicate_iac_with_corresponding_count_never_derives(self):
+        fs, config, sarif = raw_reports()
+        for report in (fs, config):
+            r = next(r for r in report['Results'] if any(f['ID'] == 'AWS-0132' for f in r.get('Misconfigurations', [])))
+            f = next(f for f in r['Misconfigurations'] if f['ID'] == 'AWS-0132')
+            r['Misconfigurations'].append(copy.deepcopy(f))
+            r['MisconfSummary']['Failures'] += 1
+        with self.assertRaisesRegex(ValueError, 'exact-iac-inventory'):
+            c.upload_view(fs, config, sarif)
+
+    def test_raw_sarif_result_order_is_preserved_in_remaining_view(self):
+        fs, config, sarif = raw_reports()
+        sarif['runs'][0]['results'].reverse()
+        _, derived, removed = c.upload_view(fs, config, sarif)
+        indices = {r['raw_result_index'] for r in removed}
+        self.assertEqual(derived['runs'][0]['results'],
+                         [r for i, r in enumerate(sarif['runs'][0]['results']) if i not in indices])
+
+    def test_only_success_can_upload_derived_and_always_retain_raw(self):
+        import yaml
+        workflow = yaml.safe_load((HERE.parent / '.github/workflows/pr-security-gate.yml').read_text())
+        steps = {s.get('id'): s for s in workflow['jobs']['precheck']['steps'] if s.get('id')}
+        upload = steps['cybercoach_sarif']
+        self.assertEqual(upload['if'], "always() && github.repository == 'NC-DIT-Open-Source/CyberCoach-NC' && steps.cybercoach_trivy.outputs.evidence != '' && steps.cybercoach_trivy.outcome == 'success'")
+        self.assertEqual(upload['with']['sarif_file'], '${{ steps.cybercoach_trivy.outputs.evidence }}/trivy-upload.sarif')
+        evidence = steps['cybercoach_evidence']
+        self.assertIn('always()', evidence['if'])
+        self.assertNotIn("outcome == 'success'", evidence['if'])
+        self.assertIn('${{ steps.cybercoach_trivy.outputs.evidence }}/*.sarif', evidence['with']['path'])
+        self.assertIn('${{ steps.cybercoach_trivy.outputs.evidence }}/*.json', evidence['with']['path'])
+
 
 
 if __name__=='__main__':
