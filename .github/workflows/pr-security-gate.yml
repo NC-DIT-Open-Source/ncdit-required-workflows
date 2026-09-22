@@ -275,10 +275,13 @@ jobs:
           def source(root, expected_head, env):
               root = Path(root).absolute()
               need(not root.is_symlink(), 'linked-checkout')
-              def git(*args):
-                  return subprocess.check_output(['git', '-C', str(root), *args], env=environment(env),
-                                                 stderr=subprocess.PIPE).decode().strip()
-              need(git('remote', 'get-url', 'origin') == 'https://github.com/' + REPOSITORY + '.git', 'origin')
+              def git(*args, exact=False):
+                  output = subprocess.check_output(['git', '-C', str(root), *args], env=environment(env),
+                                                   stderr=subprocess.PIPE).decode()
+                  # Remove only Git's output newline when comparing the exact remote URL.
+                  return output.removesuffix('\n') if exact else output.strip()
+              origin = 'https://github.com/' + REPOSITORY
+              need(git('remote', 'get-url', 'origin', exact=True) in (origin, origin + '.git'), 'origin')
               commit = git('rev-parse', 'HEAD')
               tree = git('rev-parse', 'HEAD^{tree}')
               need(commit == expected_head and full(tree, '[a-f0-9]{40}'), 'checkout-head-tree')

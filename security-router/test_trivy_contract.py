@@ -410,6 +410,58 @@ class Source(unittest.TestCase):
         path=self.root/next(iter(c.SOURCES));raw=path.read_text();path.unlink();link=self.root/'elsewhere';link.write_text(raw);path.symlink_to(link)
         self.git('add','.');self.git('commit','-qm','linked source')
         with self.assertRaises(ValueError):c.source(self.root,self.git('rev-parse','HEAD'),self.env)
+    def test_exact_canonical_checkout_origins(self):
+        original = c.source(self.root, self.head, self.env)
+        for suffix in ('', '.git'):
+            with self.subTest(suffix=suffix):
+                self.git('remote', 'set-url', 'origin', 'https://github.com/' + c.REPOSITORY + suffix)
+                self.assertEqual(c.source(self.root, self.head, self.env), original)
+
+    def test_origin_variants_are_not_normalized_or_accepted(self):
+        origin = 'https://github.com/' + c.REPOSITORY
+        variants = [
+            'https://github.com/foreign/repo', origin + '-foreign', origin + '.git.git',
+            origin + '/', origin + '.git/', origin + '/extra', origin + '?x=1',
+            origin + '.git?x=1', origin + '#main', origin + '.git#main',
+            origin.replace('https:', 'http:'), origin.replace('https:', 'git:'),
+            origin.replace('https:', 'ssh:'), 'git@github.com:' + c.REPOSITORY + '.git',
+            origin.replace('github.com', 'github.com.evil.invalid'),
+            origin.replace('github.com', 'github.com:443'),
+            origin.replace('github.com', 'user@github.com'),
+            origin.replace('github.com', 'user:password@github.com'),
+            origin.replace('github.com', 'github.com@evil.invalid'),
+            origin.replace('github.com', 'GITHUB.COM'), origin.lower(),
+            origin.replace('/CyberCoach-NC', '/other/../CyberCoach-NC'),
+            origin.replace('/CyberCoach-NC', '//CyberCoach-NC'),
+            origin.replace('CyberCoach', '%43yberCoach'), origin + '%2Egit',
+            origin.replace('https://', 'https:\\'), '',
+        ]
+        for suffix in ('', '.git'):
+            for space in (' ', '\t', '\r', '\n', '\v', '\f', '\u00a0'):
+                variants.extend((space + origin + suffix, origin + suffix + space))
+        for value in variants:
+            with self.subTest(origin=value):
+                self.git('remote', 'set-url', 'origin', value)
+                with self.assertRaisesRegex(ValueError, '^origin$'):
+                    c.source(self.root, self.head, self.env)
+
+    def test_both_origins_preserve_head_cleanliness_and_policy_pins(self):
+        name = next(iter(c.SOURCES)); path = self.root / name; original = path.read_text()
+        for suffix in ('', '.git'):
+            with self.subTest(suffix=suffix):
+                self.git('remote', 'set-url', 'origin', 'https://github.com/' + c.REPOSITORY + suffix)
+                head = self.git('rev-parse', 'HEAD')
+                with self.assertRaisesRegex(ValueError, 'checkout-head-tree'):
+                    c.source(self.root, 'f' * 40, self.env)
+                path.write_text(original + '\n# changed policy\n')
+                with self.assertRaisesRegex(ValueError, 'dirty-checkout'):
+                    c.source(self.root, head, self.env)
+                self.git('add', name); self.git('commit', '-qm', 'changed policy fixture')
+                with self.assertRaisesRegex(ValueError, 'reviewed-source-hash'):
+                    c.source(self.root, self.git('rev-parse', 'HEAD'), self.env)
+                path.write_text(original)
+                self.git('add', name); self.git('commit', '-qm', 'restored policy fixture')
+
     def test_wrong_origin(self):
         self.git('remote','set-url','origin','https://github.com/foreign/repo.git')
         with self.assertRaisesRegex(ValueError,'origin'):c.source(self.root,self.head,self.env)
