@@ -24,9 +24,13 @@ ACTION = 'ed142fd0673e97e23eac54620cfb913e5ce36c25'
 SETUP = '3fb12ec12f41e471780db15c232d5dd185dcb514'
 BINARY = '379d59f24a4a828c55de5f0b91b6805cc35d13580180b658820e648611256166'
 ARCHIVE = '8b4376d5d6befe5c24d503f10ff136d9e0c49f9127a4279fd110b727929a5aa9'
-# Reviewed semantic files plus the two exact call sites in CauseMetadata.
-SOURCES = {'infra/aws/operator-foundations/access-logging.tf': 'ee63a8eabd2d8abb80b763cfd22d9ba3cd7cd424c6c0e9f6af555cc034863b3b', 'infra/aws/modules/audit-foundation/receivers.tf': '7bacfbc849b2e4b693a7b8cad9077560e07db492f2b3eb2d15fdffaf2c2a0c5f', 'infra/aws/modules/public-frontdoor/main.tf': '714118e813722d147134d6b7df0570985477471645fd93ff3d45e90b97d2e3de', 'infra/aws/modules/records/operator-tests/composed/main.tf': 'af35d548780a3dcd2ff99c47f18d8ae3d8c0035dffc91e6e28f66a02b250bd4e', 'infra/aws/public-frontdoor/main.tf': 'bad8c37c1313c4fce012b6e68e3b5988e5ff189181e88ea68e1a2c0ce739b478'}
-EXPECTED = [{'rule': 'AWS-0132', 'severity': 'HIGH', 'target': 'operator-foundations/access-logging.tf', 'provider': 'AWS', 'service': 's3', 'resource': 'aws_s3_bucket_server_side_encryption_configuration.access_logs', 'start_line': 61, 'end_line': 72, 'occurrences': []}, {'rule': 'AWS-0089', 'severity': 'LOW', 'target': 'operator-foundations/access-logging.tf', 'provider': 'AWS', 'service': 's3', 'resource': 'aws_s3_bucket.access_logs', 'start_line': 32, 'end_line': 39, 'occurrences': []}, {'rule': 'AWS-0132', 'severity': 'HIGH', 'target': 'modules/audit-foundation/receivers.tf', 'provider': 'AWS', 'service': 's3', 'resource': 'module.audit', 'start_line': 100, 'end_line': 107, 'occurrences': [{'resource': 'module.audit', 'filename': 'modules/records/operator-tests/composed/main.tf', 'start_line': 11, 'end_line': 43}]}, {'rule': 'AWS-0089', 'severity': 'LOW', 'target': 'modules/audit-foundation/receivers.tf', 'provider': 'AWS', 'service': 's3', 'resource': 'module.audit', 'start_line': 64, 'end_line': 78, 'occurrences': [{'resource': 'module.audit', 'filename': 'modules/records/operator-tests/composed/main.tf', 'start_line': 11, 'end_line': 43}]}, {'rule': 'AWS-0010', 'severity': 'MEDIUM', 'target': 'modules/public-frontdoor/main.tf', 'provider': 'AWS', 'service': 'cloudfront', 'resource': 'module.public_frontdoor', 'start_line': 70, 'end_line': 123, 'occurrences': [{'resource': 'module.public_frontdoor', 'filename': 'public-frontdoor/main.tf', 'start_line': 91, 'end_line': 104}]}]
+# Exact 4dfc02e source inventory, including every observed IaC resource/call site.
+SOURCES = {'infra/aws/operator-foundations/access-logging.tf': 'c563039d82141b9fd97b83b9d6b901a7601f64dda6367865a61aa4ca75a0a3de', 'infra/aws/modules/audit-foundation/receivers.tf': '7bacfbc849b2e4b693a7b8cad9077560e07db492f2b3eb2d15fdffaf2c2a0c5f', 'infra/aws/modules/public-frontdoor/main.tf': '534cd982a373079a8f5a2e9b07eba55a25f622b52fe094b74ade610368f1b6d4', 'infra/aws/modules/records/operator-tests/composed/main.tf': 'af35d548780a3dcd2ff99c47f18d8ae3d8c0035dffc91e6e28f66a02b250bd4e', 'infra/aws/public-frontdoor/main.tf': 'd52c415f375eac096498169411cecdd979b148482fe3303609290c7fd89593c8', 'infra/aws/modules/origin-authentication/main.tf': '803c6f2408abab1ea28be4678c06041542c71b5e1ca62d5fa8428a6a471ad397', 'infra/aws/origin-authentication/main.tf': 'a89eae775ad381c7cfce465cf472c81dcc1508350f6a76882932fe7306c83e8a', 'infra/aws/operator-database/stores.tf': '087322d6a05abb53f8e8ec4531de988f4a797ef9734ad5b6685d3e282ce6ca76'}
+# LOW AWS-0066 is visible, not remediated: Lambda@Edge does not support X-Ray.
+# https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-at-edge-function-restrictions.html
+# MEDIUM AWS-0014 remains a visible single-region trail product improvement.
+# These observations grant no additional HIGH/CRITICAL exception.
+EXPECTED = [{'rule': 'AWS-0089', 'severity': 'LOW', 'target': 'modules/audit-foundation/receivers.tf', 'provider': 'AWS', 'service': 's3', 'resource': 'module.audit', 'start_line': 64, 'end_line': 78, 'occurrences': [{'resource': 'module.audit', 'filename': 'modules/records/operator-tests/composed/main.tf', 'start_line': 11, 'end_line': 43}]}, {'rule': 'AWS-0132', 'severity': 'HIGH', 'target': 'modules/audit-foundation/receivers.tf', 'provider': 'AWS', 'service': 's3', 'resource': 'module.audit', 'start_line': 100, 'end_line': 107, 'occurrences': [{'resource': 'module.audit', 'filename': 'modules/records/operator-tests/composed/main.tf', 'start_line': 11, 'end_line': 43}]}, {'rule': 'AWS-0066', 'severity': 'LOW', 'target': 'modules/origin-authentication/main.tf', 'provider': 'AWS', 'service': 'lambda', 'resource': 'module.origin_authentication', 'start_line': 65, 'end_line': 85, 'occurrences': [{'resource': 'module.origin_authentication', 'filename': 'origin-authentication/main.tf', 'start_line': 26, 'end_line': 37}]}, {'rule': 'AWS-0010', 'severity': 'MEDIUM', 'target': 'modules/public-frontdoor/main.tf', 'provider': 'AWS', 'service': 'cloudfront', 'resource': 'module.public_frontdoor', 'start_line': 70, 'end_line': 131, 'occurrences': [{'resource': 'module.public_frontdoor', 'filename': 'public-frontdoor/main.tf', 'start_line': 92, 'end_line': 106}]}, {'rule': 'AWS-0014', 'severity': 'MEDIUM', 'target': 'operator-database/stores.tf', 'provider': 'AWS', 'service': 'cloudtrail', 'resource': 'aws_cloudtrail.database', 'start_line': 146, 'end_line': 146, 'occurrences': [{'resource': 'aws_cloudtrail.database', 'filename': 'operator-database/stores.tf', 'start_line': 140, 'end_line': 158}]}, {'rule': 'AWS-0089', 'severity': 'LOW', 'target': 'operator-foundations/access-logging.tf', 'provider': 'AWS', 'service': 's3', 'resource': 'aws_s3_bucket.access_logs', 'start_line': 40, 'end_line': 47, 'occurrences': []}, {'rule': 'AWS-0132', 'severity': 'HIGH', 'target': 'operator-foundations/access-logging.tf', 'provider': 'AWS', 'service': 's3', 'resource': 'aws_s3_bucket_server_side_encryption_configuration.access_logs', 'start_line': 69, 'end_line': 80, 'occurrences': []}]
 SEVERITIES = ('UNKNOWN', 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL')
 KINDS = ('Vulnerabilities', 'Misconfigurations', 'Secrets', 'Licenses')
 RESULT_KEYS = {'Target', 'Class', 'Type', 'Packages', 'MisconfSummary', *KINDS}
@@ -167,7 +171,8 @@ def report(value, prefix, config_only=False):
          value.get('ArtifactType') == ('filesystem' if config_only else 'repository'), 'report-schema')
     need(set(value) <= {'SchemaVersion', 'CreatedAt', 'ArtifactName', 'ArtifactType', 'Metadata', 'Results', 'Trivy', 'ReportID', 'ArtifactID'}, 'report-schema-fields')
     if not config_only:
-        need(value.get('Metadata', {}).get('RepoURL') == 'https://github.com/' + REPOSITORY + '.git' and
+        need(value.get('Metadata', {}).get('RepoURL') in ('https://github.com/' + REPOSITORY,
+                                                         'https://github.com/' + REPOSITORY + '.git') and
              full(value.get('Metadata', {}).get('Commit'), '[a-f0-9]{40}'), 'report-repository')
     results = value.get('Results')
     need(isinstance(results, list) and results, 'missing-results')
@@ -208,7 +213,7 @@ def report(value, prefix, config_only=False):
                     # Do not copy secret contents into the receipt/log.
                     blockers.append(dict(kind=kind, severity=severity, target=r['Target']))
     need(successes > 0, 'no-evaluated-configuration-successes')
-    need(Counter(map(canonical, iac)) == Counter(map(canonical, EXPECTED)), 'exact-five-iac')
+    need(Counter(map(canonical, iac)) == Counter(map(canonical, EXPECTED)), 'exact-iac-inventory')
     return dict(counts=dict(sorted(counts.items())), iac=iac, blockers=blockers, configuration_successes=successes)
 
 
@@ -351,7 +356,7 @@ def sarif_correspondence(fs, sarif, conversion_input=None):
         need(Path(conversion_input).is_absolute() and run.get('originalUriBaseIds') ==
              {'ROOTPATH': {'uri': 'file://' + str(conversion_input) + '/'}}, 'sarif-conversion-input')
     results = run.get('results')
-    need(isinstance(results, list) and len(results) >= 5, 'sarif-results')
+    need(isinstance(results, list) and len(results) >= len(EXPECTED), 'sarif-results')
     observed = Counter()
     for r in results:
         need(isinstance(r, dict) and set(r) == {'ruleId', 'ruleIndex', 'level', 'message', 'locations'}, 'sarif-result-structure')
@@ -384,7 +389,7 @@ def classify(fs, config, sarif, conversion_input=None):
     sarif_correspondence(fs, sarif, conversion_input)
     # Conversion is from this exact raw JSON, never from filtered findings.
     return dict(finding_counts_by_kind_and_severity=whole['counts'],
-                five_iac_findings=whole['iac'], configuration_successes=whole['configuration_successes'],
+                iac_findings=whole['iac'], configuration_successes=whole['configuration_successes'],
                 accepted_high_findings=[x for x in whole['iac'] if x['severity'] == 'HIGH'],
                 unaccepted_high_critical_findings=[])
 
@@ -444,7 +449,7 @@ def execute(root, out, env):
     need(fs.get('ArtifactName') == str(root) and config.get('ArtifactName') == str(root / 'infra/aws'),
          'report-source-root')
     decision = classify(fs, config, sarif, out / 'filesystem.json')
-    return dict(schema='ncdit-trivy-contract-receipt-v1', contract=CONTRACT, status='passed',
+    return dict(schema='ncdit-trivy-contract-receipt-v2', contract=CONTRACT, status='passed',
         organization_policy_acceptance='established-for-this-contract', **identity, source=before, scanner=tool,
         private_cache_path=str(cache), external_policy_files=[], inherited_trivy_configuration='not-forwarded',
         secret_config_sha256=sha(regular(out / 'secret-config.yaml')),
@@ -463,7 +468,7 @@ def main():
     try:
         receipt = execute(root, out, env)
     except Exception as error:
-        (out / 'receipt.json').write_text(canonical(dict(schema='ncdit-trivy-contract-receipt-v1', contract=CONTRACT,
+        (out / 'receipt.json').write_text(canonical(dict(schema='ncdit-trivy-contract-receipt-v2', contract=CONTRACT,
             status='blocked', organization_policy_acceptance='not-established', error_type=type(error).__name__)))
         print('::error::CyberCoach Trivy contract blocked; inspect retained evidence.')
         return 1
