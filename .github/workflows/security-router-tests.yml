@@ -49,6 +49,9 @@ jobs:
       - name: Safe scanner failure receipt tests
         run: python3 security-router/test_failure_receipt.py
 
+      - name: Safe missing-report stage receipt tests
+        run: python3 security-router/test_stage_receipt.py
+
       - name: Dockerfile lint discovery and failure tests
         run: python3 security-router/test_lint.py
 
