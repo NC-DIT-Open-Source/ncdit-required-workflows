@@ -104,6 +104,28 @@ or the SDK transcript. Missing typed error fields remain unclassified; a
 receipt is diagnostic evidence, not a completed security review. Receipt failures
 cannot change the existing scan or fail-closed gate.
 
+When the action returns success but no JSONL report exists, a separate
+`claude-security-stages-<PR>-<attempt>` artifact retains `stages.json` for seven
+days. The same bounded, isolated parser records fixed stage counters and typed
+result/limit/refusal facts from SDK 0.3.280. It never copies text, paths, IDs,
+helper arguments, tool output, model descriptions, or transcripts.
+
+These are **observed events**, not a scan verdict: zero completed workflows means
+no matching terminal event was observed, not that a workflow definitely failed.
+A launch acknowledgement is never counted as completion. Helper completion means
+a successful synchronous tool return, not proof that a valid report was created.
+Missing tool metadata remains `null`, and `none_reported` means only that the last
+result did not report a typed execution limit. Nested calls, unrelated sessions,
+and calls before the preceding result are excluded. The action may omit trailing
+SDK events, so missing events cannot establish what happened. This diagnostic
+runs after the unchanged gate and cannot turn a missing report into a pass.
+
+The parser contract follows the published SDK [message types](https://code.claude.com/docs/en/agent-sdk/typescript)
+and its typed `WorkflowOutput`/`BashOutput`: only a correlated `task_notification`
+marks background completion. Input is limited to 4 MiB, 10,000 messages and
+10,000 root content blocks; the receipt is at most 2 KiB. Unknown or malformed
+input produces a bounded diagnostic rather than raw exception output.
+
 ## How long should a run take?
 
 **A run over 30 minutes is normal. It is not hung. Do not cancel it.**

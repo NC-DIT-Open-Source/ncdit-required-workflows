@@ -2124,6 +2124,280 @@ jobs:
           retention-days: 7
           if-no-files-found: error
 
+      # Successful model turns can still stop before the plugin produces a report.
+      # Observe typed SDK stages only; this cannot change the gate's verdict.
+      - name: Preserve safe stages when the scanner produces no report
+        id: stage_receipt
+        if: always() && steps.scan.outcome == 'success' && steps.scan.outputs.execution_file != ''
+        continue-on-error: true
+        timeout-minutes: 1
+        shell: bash
+        env:
+          EXECUTION_FILE: ${{ steps.scan.outputs.execution_file }}
+        run: |
+          shopt -s nullglob
+          for report in CLAUDE-SECURITY-*/CLAUDE-SECURITY-RESULTS.jsonl; do
+            if [ -e "$report" ]; then exit 0; fi
+          done
+          python3 -I - <<'STAGE_RECEIPT_PY'
+          import json
+          import os
+          from pathlib import Path
+          import shlex
+          import stat
+          import tempfile
+
+          LIMIT = 4 * 1024 * 1024
+          HELPERS = ('write_scan_meta', 'keep_waiting', 'save_result', 'render_report')
+          LIMITS = {'success': 'none_reported', 'error_max_budget_usd': 'budget',
+                    'error_max_turns': 'turns', 'error_during_execution': 'execution',
+                    'error_max_structured_output_retries': 'structured_output'}
+          STOPS = {'end_turn', 'max_tokens', 'stop_sequence', 'tool_use', 'pause_turn',
+                   'refusal', 'model_context_window_exceeded'}
+
+
+          def blank():
+              return dict(schema=1, source_status='unavailable',
+                          result=dict(subtype='unknown', is_error=None, limit='unknown',
+                                      stop_reason='unknown', last_assistant_stop='unknown',
+                                      permission_denials=None, refusal_no_fallback=False),
+                          workflow=dict(available=None, invoked=0, launched=0, completed=0,
+                                        failed=0, stopped=0, tool_errors=0),
+                          skill=dict(available=None, invoked=0),
+                          helpers={name: dict(invoked=0, completed=0, errors=0)
+                                   for name in HELPERS})
+
+
+          def unique(pairs):
+              result = {}
+              for key, value in pairs:
+                  if key in result:
+                      raise ValueError('duplicate key')
+                  result[key] = value
+              return result
+
+
+          def identity(value):
+              # IDs are only internal join keys, never included in the receipt.
+              return value if isinstance(value, str) and 0 < len(value) <= 256 else None
+
+
+          def stop(value):
+              return value if isinstance(value, str) and value in STOPS else 'unknown'
+
+
+          def classify(messages):
+              receipt = blank()
+              indexes = [i for i, m in enumerate(messages)
+                         if isinstance(m, dict) and m.get('type') == 'result']
+              if not indexes:
+                  raise ValueError('missing result')
+              end = indexes[-1]
+              start = indexes[-2] + 1 if len(indexes) > 1 else 0
+              result = messages[end]
+              session = identity(result.get('session_id'))
+              if session is None:
+                  raise ValueError('missing session')
+              window = [m for i, m in enumerate(messages) if i >= start and isinstance(m, dict)
+                        and m.get('session_id') == session
+                        and (i <= end or m.get('type') == 'system')]
+              inits = [m for m in messages[:end] if isinstance(m, dict)
+                       and m.get('session_id') == session
+                       and m.get('type') == 'system' and m.get('subtype') == 'init']
+              init = inits[-1] if inits else {}
+              tools = init.get('tools')
+              if isinstance(tools, list) and all(isinstance(t, str) for t in tools):
+                  receipt['workflow']['available'] = 'Workflow' in tools
+              skills = init.get('slash_commands')
+              if isinstance(skills, list) and all(isinstance(s, str) for s in skills):
+                  receipt['skill']['available'] = 'claude-security:claude-security' in skills
+              # Only recognize the installed plugin's exact helper paths. Never execute
+              # the parsed command or inspect its arguments/output for prose clues.
+              scripts = {}
+              plugins = init.get('plugins')
+              if isinstance(plugins, list):
+                  for plugin in plugins:
+                      if not isinstance(plugin, dict) or plugin.get('name') != 'claude-security':
+                          continue
+                      value = plugin.get('path')
+                      if not isinstance(value, str) or not 0 < len(value) <= 2048:
+                          continue
+                      path = Path(value)
+                      if not path.is_absolute() or '..' in path.parts:
+                          continue
+                      for name in HELPERS:
+                          filename = 'keep-waiting.sh' if name == 'keep_waiting' else name + '.py'
+                          scripts[str(path / 'scripts' / filename)] = name
+              subtype = result.get('subtype')
+              if isinstance(subtype, str) and subtype in LIMITS:
+                  receipt['result']['subtype'] = subtype
+                  receipt['result']['limit'] = LIMITS[subtype]
+              if type(result.get('is_error')) is bool:
+                  receipt['result']['is_error'] = result['is_error']
+              receipt['result']['stop_reason'] = stop(result.get('stop_reason'))
+              denials = result.get('permission_denials')
+              if isinstance(denials, list):
+                  receipt['result']['permission_denials'] = min(len(denials), 10000)
+
+              calls, returns, tasks, terminal = {}, set(), {}, {}
+              launched, tool_errors, skills_seen = set(), set(), set()
+              helper_completed = {name: set() for name in HELPERS}
+              helper_errors = {name: set() for name in HELPERS}
+              blocks_seen = 0
+              for message in window:
+                  kind = message.get('type')
+                  if kind == 'system':
+                      subtype = message.get('subtype')
+                      if subtype == 'model_refusal_no_fallback':
+                          receipt['result']['refusal_no_fallback'] = True
+                      call_id = identity(message.get('tool_use_id'))
+                      task_id = identity(message.get('task_id'))
+                      if subtype == 'task_started' and message.get('task_type') == 'local_workflow':
+                          if calls.get(call_id) == 'workflow' and task_id:
+                              tasks[task_id] = call_id
+                              launched.add(call_id)
+                      elif subtype == 'task_notification':
+                          # Never count an unrelated task or a launch acknowledgement as
+                          # completed. Typed terminal status must join a known task ID.
+                          status = message.get('status')
+                          if task_id in tasks and (call_id is None or tasks[task_id] == call_id):
+                              if isinstance(status, str) and status in {'completed', 'failed', 'stopped'}:
+                                  terminal[task_id] = status
+                      continue
+                  if kind not in ('assistant', 'user') or message.get('parent_tool_use_id') is not None:
+                      continue
+                  body = message.get('message')
+                  if not isinstance(body, dict):
+                      continue
+                  if kind == 'assistant':
+                      receipt['result']['last_assistant_stop'] = stop(body.get('stop_reason'))
+                  content = body.get('content')
+                  if not isinstance(content, list):
+                      continue
+                  blocks_seen += len(content)
+                  if blocks_seen > 10000:
+                      raise ValueError('block bound')
+                  for block in content:
+                      if not isinstance(block, dict):
+                          continue
+                      if kind == 'assistant' and block.get('type') == 'tool_use':
+                          call_id = identity(block.get('id'))
+                          if call_id is None or call_id in calls:
+                              continue
+                          name, inputs = block.get('name'), block.get('input')
+                          if not isinstance(inputs, dict):
+                              continue
+                          category = None
+                          if name == 'Workflow' and inputs.get('name') == 'claude-security:scan':
+                              category = 'workflow'
+                          elif name == 'Skill' and inputs.get('skill') == 'claude-security:claude-security':
+                              skills_seen.add(call_id)
+                              category = 'skill'
+                          elif name == 'Bash':
+                              command = inputs.get('command')
+                              # Reject compound commands/substitutions instead of guessing
+                              # that a helper named somewhere in shell text actually ran.
+                              if isinstance(command, str) and len(command) <= 4096 and not any(
+                                      c in command for c in '\n\r;$`|&<>'):
+                                  try:
+                                      words = shlex.split(command)
+                                  except ValueError:
+                                      words = []
+                                  if 2 <= len(words) <= 32 and words[1] in scripts:
+                                      helper = scripts[words[1]]
+                                      interpreter = 'bash' if helper == 'keep_waiting' else 'python3'
+                                      if words[0] == interpreter:
+                                          category = helper
+                          if category:
+                              calls[call_id] = category
+                      elif kind == 'user' and block.get('type') == 'tool_result':
+                          call_id = identity(block.get('tool_use_id'))
+                          category = calls.get(call_id)
+                          if category is None or call_id in returns:
+                              continue
+                          returns.add(call_id)
+                          result_blocks = [b for b in content if isinstance(b, dict)
+                                           and b.get('type') == 'tool_result']
+                          output = message.get('tool_use_result')
+                          output = output if isinstance(output, dict) and len(result_blocks) == 1 else {}
+                          is_error = block.get('is_error')
+                          if category == 'workflow':
+                              if is_error is True or (isinstance(output.get('error'), str) and output['error']):
+                                  tool_errors.add(call_id)
+                              elif ((is_error is None or is_error is False)
+                                    and output.get('status') == 'async_launched'
+                                    and output.get('taskType') == 'local_workflow'):
+                                  task_id = identity(output.get('taskId'))
+                                  if task_id:
+                                      tasks[task_id] = call_id
+                                      launched.add(call_id)
+                          elif category in HELPERS:
+                              if is_error is True or output.get('interrupted') is True:
+                                  helper_errors[category].add(call_id)
+                              elif (is_error is None or is_error is False) and output.get('interrupted') is False:
+                                  if not output.get('backgroundTaskId') and not output.get('timedOutAfterMs'):
+                                      helper_completed[category].add(call_id)
+              receipt['workflow'].update(invoked=sum(v == 'workflow' for v in calls.values()),
+                                         launched=len(launched), tool_errors=len(tool_errors))
+              for status in ('completed', 'failed', 'stopped'):
+                  receipt['workflow'][status] = sum(value == status for value in terminal.values())
+              receipt['skill']['invoked'] = len(skills_seen)
+              for name in HELPERS:
+                  receipt['helpers'][name].update(invoked=sum(v == name for v in calls.values()),
+                                                 completed=len(helper_completed[name]), errors=len(helper_errors[name]))
+              receipt['source_status'] = 'ok'
+              return receipt
+
+
+          receipt = blank()
+          try:
+              root = Path(os.environ['RUNNER_TEMP'])
+              expected = root / 'claude-execution-output.json'
+              if not root.is_absolute() or Path(os.environ.get('EXECUTION_FILE', '')) != expected:
+                  raise ValueError('unexpected execution file')
+              fd = os.open(expected, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+              with os.fdopen(fd, 'rb') as handle:
+                  info = os.fstat(handle.fileno())
+                  if not stat.S_ISREG(info.st_mode) or not 0 < info.st_size <= LIMIT:
+                      raise ValueError('input bound')
+                  raw = handle.read(LIMIT + 1)
+                  if len(raw) != info.st_size:
+                      raise ValueError('input changed')
+              messages = json.loads(raw, object_pairs_hook=unique)
+              if not isinstance(messages, list) or len(messages) > 10000:
+                  raise ValueError('message bound')
+              receipt = classify(messages)
+          except (ValueError, TypeError, RecursionError):
+              receipt = blank()
+              receipt['source_status'] = 'invalid'
+          except (OSError, KeyError):
+              receipt = blank()
+
+          encoded = json.dumps(receipt, sort_keys=True, separators=(',', ':'))
+          assert len(encoded) <= 2048
+          try:
+              destination = Path(tempfile.mkdtemp(prefix='claude-safe-stage-',
+                                                 dir=os.environ['RUNNER_TEMP'])) / 'stages.json'
+              destination.write_text(encoded + '\n', encoding='utf-8')
+              with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as outputs:
+                  outputs.write('receipt_file=' + str(destination) + '\n')
+          except (OSError, KeyError):
+              print('::warning::Safe scanner stage receipt could not be retained.')
+          print(encoded)
+          STAGE_RECEIPT_PY
+
+      - name: Upload safe scanner stage receipt
+        id: stage_receipt_upload
+        if: always() && steps.stage_receipt.outputs.receipt_file != ''
+        continue-on-error: true
+        timeout-minutes: 1
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: claude-security-stages-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+          path: ${{ steps.stage_receipt.outputs.receipt_file }}
+          retention-days: 7
+          if-no-files-found: error
+
   # Post the findings as claude[bot], on a token minted after the scan finished.
   #
   # Why a separate job: the App installation token is minted once at job start and

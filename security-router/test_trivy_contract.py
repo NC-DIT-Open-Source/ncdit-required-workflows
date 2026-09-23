@@ -660,9 +660,10 @@ class Workflow(unittest.TestCase):
         for name,digest in digests.items():
             job = copy.deepcopy(self.workflow['jobs'][name])
             if name == 'scan':
-                # OAIP-634 adds diagnostic-only steps; every existing step stays pinned.
+                # OAIP-634/OAIP-637 add diagnostics only; existing steps stay pinned.
                 job['steps'] = [s for s in job['steps'] if s.get('id') not in
-                                {'failure_receipt', 'failure_receipt_upload'}]
+                                {'failure_receipt', 'failure_receipt_upload',
+                                 'stage_receipt', 'stage_receipt_upload'}]
             self.assertEqual(c.sha(c.canonical(job).encode()),digest,name)
 
 
