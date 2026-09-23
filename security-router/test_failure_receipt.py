@@ -13,20 +13,20 @@ ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW = yaml.safe_load((ROOT / '.github/workflows/pr-security-gate.yml').read_text())
 STEPS = WORKFLOW['jobs']['scan']['steps']
 STEP = next(s for s in STEPS if s.get('id') == 'failure_receipt')
-SECRET = 'private-sentinel-sk-ant-oat-test-user-source-session-id'
+PAYLOAD_MARKER = 'synthetic-sdk-content-never-published'
 FIELDS = {'schema', 'source_status', 'category', 'result_subtype',
           'sdk_error', 'api_error_status'}
 
 
 def assistant(error=None, parent=None):
     return dict(type='assistant', error=error, parent_tool_use_id=parent,
-                session_id=SECRET, message=dict(role='assistant', id=SECRET,
-                content=[dict(type='text', text=SECRET)]))
+                session_id=PAYLOAD_MARKER, message=dict(role='assistant', id=PAYLOAD_MARKER,
+                content=[dict(type='text', text=PAYLOAD_MARKER)]))
 
 
 def result(**overrides):
     return dict(type='result', subtype='success', is_error=True,
-                result=SECRET, session_id=SECRET, **overrides)
+                result=PAYLOAD_MARKER, session_id=PAYLOAD_MARKER, **overrides)
 
 
 class FailureReceipt(unittest.TestCase):
@@ -37,11 +37,11 @@ class FailureReceipt(unittest.TestCase):
             runner.mkdir()
             checkout = root / 'checkout'
             checkout.mkdir()
-            (checkout / 'json.py').write_text(f'raise RuntimeError("{SECRET}")\n')
+            (checkout / 'json.py').write_text(f'raise RuntimeError("{PAYLOAD_MARKER}")\n')
             expected = runner / 'claude-execution-output.json'
             payload = raw if raw is not None else json.dumps(messages).encode()
             if mode == 'symlink':
-                target = root / SECRET
+                target = root / PAYLOAD_MARKER
                 target.write_bytes(payload)
                 expected.symlink_to(target)
             elif mode == 'fifo':
@@ -52,14 +52,14 @@ class FailureReceipt(unittest.TestCase):
             env = {**os.environ, 'RUNNER_TEMP': str(runner),
                    'EXECUTION_FILE': str(expected), 'GITHUB_OUTPUT': str(outputs)}
             if mode == 'outside':
-                env['EXECUTION_FILE'] = str(root / SECRET)
+                env['EXECUTION_FILE'] = str(root / PAYLOAD_MARKER)
             if mode == 'output_error':
                 env['GITHUB_OUTPUT'] = str(root)
             run = subprocess.run(['bash', '-c', STEP['run']], cwd=checkout,
                                  env=env, capture_output=True, text=True, timeout=10)
             self.assertEqual(run.returncode, 0, run.stderr)
             self.assertEqual(run.stderr, '')
-            self.assertNotIn(SECRET, run.stdout)
+            self.assertNotIn(PAYLOAD_MARKER, run.stdout)
             self.assertNotIn(str(root), run.stdout)
             receipt = json.loads(run.stdout.splitlines()[-1])
             self.assertEqual(set(receipt), FIELDS)
@@ -70,7 +70,7 @@ class FailureReceipt(unittest.TestCase):
                 artifact = Path(output.strip().split('=', 1)[1])
                 self.assertTrue(artifact.is_relative_to(runner))
                 self.assertEqual(json.loads(artifact.read_text()), receipt)
-                self.assertNotIn(SECRET, artifact.read_text())
+                self.assertNotIn(PAYLOAD_MARKER, artifact.read_text())
             else:
                 self.assertIn('::warning::Safe scanner failure receipt could not be retained.',
                               run.stdout)
@@ -78,8 +78,8 @@ class FailureReceipt(unittest.TestCase):
 
     def test_real_sdk_array_retains_typed_model_failure_without_content(self):
         receipt = self.run_receipt([
-            {'type': 'system', 'subtype': 'init', 'model': SECRET},
-            {'type': 'user', 'message': {'content': SECRET}},
+            {'type': 'system', 'subtype': 'init', 'model': PAYLOAD_MARKER},
+            {'type': 'user', 'message': {'content': PAYLOAD_MARKER}},
             assistant('model_not_found'), result(api_error_status=404)])
         self.assertEqual(receipt['category'], 'model_not_found')
         self.assertEqual(receipt['sdk_error'], 'model_not_found')
@@ -103,15 +103,15 @@ class FailureReceipt(unittest.TestCase):
 
     def test_absent_fields_and_freeform_body_stay_unclassified(self):
         doc = result()
-        doc['result'] = 'API Error: 401 authentication_failed ' + SECRET
-        receipt = self.run_receipt([assistant(SECRET), doc])
+        doc['result'] = 'API Error: 401 authentication_failed ' + PAYLOAD_MARKER
+        receipt = self.run_receipt([assistant(PAYLOAD_MARKER), doc])
         self.assertEqual(receipt['category'], 'unclassified')
         self.assertIsNone(receipt['sdk_error'])
         self.assertIsNone(receipt['api_error_status'])
 
     def test_last_terminal_result_uses_only_last_root_assistant(self):
         messages = [assistant('authentication_failed'), result(api_error_status=401),
-                    assistant('model_not_found'), assistant('billing_error', parent=SECRET),
+                    assistant('model_not_found'), assistant('billing_error', parent=PAYLOAD_MARKER),
                     result(api_error_status=404)]
         self.assertEqual(self.run_receipt(messages)['category'], 'model_not_found')
         messages.insert(-1, assistant())
@@ -129,7 +129,7 @@ class FailureReceipt(unittest.TestCase):
                                   ('error_max_budget_usd', 'budget_limit'),
                                   ('error_during_execution', 'execution_error'),
                                   ('error_max_structured_output_retries', 'structured_output_limit')):
-            terminal = dict(type='result', subtype=subtype, is_error=True, errors=[SECRET])
+            terminal = dict(type='result', subtype=subtype, is_error=True, errors=[PAYLOAD_MARKER])
             self.assertEqual(self.run_receipt([assistant('billing_error'), terminal])['category'],
                              category)
 
@@ -141,15 +141,15 @@ class FailureReceipt(unittest.TestCase):
         self.assertIsNone(receipt['sdk_error'])
 
     def test_untrusted_status_and_error_shapes_are_not_copied(self):
-        for status in (SECRET, True, 401.0, 999, {'token': SECRET}):
+        for status in (PAYLOAD_MARKER, True, 401.0, 999, {'unexpected': PAYLOAD_MARKER}):
             with self.subTest(status=status):
-                receipt = self.run_receipt([assistant({'token': SECRET}),
+                receipt = self.run_receipt([assistant({'unexpected': PAYLOAD_MARKER}),
                                             result(api_error_status=status)])
                 self.assertEqual(receipt['category'], 'unclassified')
                 self.assertIsNone(receipt['api_error_status'])
 
     def test_malformed_duplicate_deep_or_non_array_json_is_safe(self):
-        payloads = [b'{', json.dumps({'secret': SECRET}).encode(),
+        payloads = [b'{', json.dumps({'unexpected': PAYLOAD_MARKER}).encode(),
                     b'[{"type":"result","type":"assistant"}]',
                     b'[' * 2000 + b']' * 2000]
         for raw in payloads:
