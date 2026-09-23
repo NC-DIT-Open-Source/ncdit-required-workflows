@@ -651,8 +651,13 @@ class Workflow(unittest.TestCase):
             self.assertEqual(summary['env'][key],expected.replace('DOLLAR',chr(36)))
         self.assertEqual(hashlib.sha256(summary['run'].encode()).hexdigest(),DATA['summary_script_sha256'])
 
-    def test_nonprecheck_jobs_unchanged(self):
-        for name,digest in DATA['other_jobs'].items():
+    def test_nonprecheck_jobs_match_reviewed_baseline(self):
+        # OAIP-627 updates only the scan model and both Claude action pins.
+        # Keep the original Trivy evidence fixture intact and pin the reviewed jobs.
+        digests = {**DATA['other_jobs'],
+                   'scan': '6feefe1791163973a8cfb08415429e15ac4f41ed85bfdae08a382afb02172b3d',
+                   'report': '070d2f550735d06be00d589a85ec9ede490caf31d21be2b1100a8c3f401ad5cd'}
+        for name,digest in digests.items():
             self.assertEqual(c.sha(c.canonical(self.workflow['jobs'][name]).encode()),digest,name)
 
 
