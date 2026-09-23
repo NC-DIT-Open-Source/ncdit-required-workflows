@@ -1999,6 +1999,131 @@ jobs:
           echo "See the claude[bot] comment on this PR for the full report, impact, and fix guidance."
           exit 1
 
+      # Run diagnostics after the gate so uploads cannot affect its elapsed-time verdict. Only fixed enums/numeric
+      # statuses leave the isolated parser; prompts, errors and transcripts never do.
+      - name: Preserve a safe scanner failure receipt
+        id: failure_receipt
+        if: always() && (steps.scan.outcome == 'failure' || steps.scan.outcome == 'cancelled')
+        continue-on-error: true
+        timeout-minutes: 1
+        shell: bash
+        env:
+          EXECUTION_FILE: ${{ steps.scan.outputs.execution_file }}
+        run: |
+          python3 -I - <<'FAILURE_RECEIPT_PY'
+          import json
+          import os
+          from pathlib import Path
+          import stat
+          import tempfile
+
+          LIMIT = 4 * 1024 * 1024
+          SDK_ERRORS = {
+              'authentication_failed', 'oauth_org_not_allowed', 'account_on_hold',
+              'billing_error', 'rate_limit', 'overloaded', 'invalid_request',
+              'model_not_found', 'server_error', 'max_output_tokens', 'unknown',
+          }
+          LOOP_ERRORS = {
+              'error_max_turns': 'turn_limit',
+              'error_during_execution': 'execution_error',
+              'error_max_budget_usd': 'budget_limit',
+              'error_max_structured_output_retries': 'structured_output_limit',
+          }
+          HTTP_ERRORS = {
+              400: 'invalid_request', 401: 'authentication_failed', 402: 'billing_error',
+              403: 'permission_denied', 404: 'request_not_found', 408: 'request_timeout',
+              409: 'request_conflict', 413: 'input_limit', 422: 'invalid_request',
+              429: 'rate_limit', 500: 'server_error', 502: 'server_error',
+              503: 'server_error', 504: 'request_timeout', 529: 'overloaded',
+          }
+          receipt = dict(schema=1, source_status='unavailable', category='unclassified',
+                         result_subtype='unknown', sdk_error=None, api_error_status=None)
+
+          def unique(pairs):
+              result = {}
+              for key, value in pairs:
+                  if key in result:
+                      raise ValueError('duplicate key')
+                  result[key] = value
+              return result
+
+          try:
+              root = Path(os.environ['RUNNER_TEMP'])
+              expected = root / 'claude-execution-output.json'
+              supplied = Path(os.environ.get('EXECUTION_FILE', ''))
+              if not root.is_absolute() or supplied != expected:
+                  raise ValueError('unexpected execution file')
+              # Refuse links/devices/FIFOs before reading; never follow a path from
+              # the checkout or echo input values/exceptions into the public log.
+              fd = os.open(expected, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+              with os.fdopen(fd, 'rb') as handle:
+                  info = os.fstat(handle.fileno())
+                  if not stat.S_ISREG(info.st_mode) or not 0 < info.st_size <= LIMIT:
+                      raise ValueError('input bound')
+                  raw = handle.read(LIMIT + 1)
+                  if len(raw) != info.st_size:
+                      raise ValueError('input changed')
+              messages = json.loads(raw, object_pairs_hook=unique)
+              if not isinstance(messages, list) or len(messages) > 10000:
+                  raise ValueError('message bound')
+              result_indexes = [i for i, m in enumerate(messages)
+                                if isinstance(m, dict) and m.get('type') == 'result']
+              if not result_indexes:
+                  raise ValueError('missing result')
+              index = result_indexes[-1]
+              start = result_indexes[-2] + 1 if len(result_indexes) > 1 else 0
+              result = messages[index]
+              subtype = result.get('subtype')
+              if isinstance(subtype, str) and subtype in {'success', *LOOP_ERRORS}:
+                  receipt['result_subtype'] = subtype
+              receipt['source_status'] = 'ok'
+              if isinstance(subtype, str) and subtype in LOOP_ERRORS:
+                  receipt['category'] = LOOP_ERRORS[subtype]
+              elif subtype == 'success' and result.get('is_error') is True:
+                  assistants = [m for m in messages[start:index] if isinstance(m, dict)
+                                and m.get('type') == 'assistant'
+                                and m.get('parent_tool_use_id') is None]
+                  error = assistants[-1].get('error') if assistants else None
+                  if isinstance(error, str) and error in SDK_ERRORS:
+                      receipt['sdk_error'] = error
+                  status = result.get('api_error_status')
+                  if type(status) is int and status in HTTP_ERRORS:
+                      receipt['api_error_status'] = status
+                  receipt['category'] = (
+                      error if isinstance(error, str) and error in SDK_ERRORS - {'unknown'}
+                      else HTTP_ERRORS.get(receipt['api_error_status'], 'unclassified'))
+              else:
+                  receipt['category'] = 'no_failed_result'
+          except (ValueError, TypeError, RecursionError):
+              receipt['source_status'] = 'invalid'
+          except (OSError, KeyError):
+              receipt['source_status'] = 'unavailable'
+
+          encoded = json.dumps(receipt, sort_keys=True, separators=(',', ':'))
+          assert len(encoded) <= 512
+          try:
+              destination = Path(tempfile.mkdtemp(prefix='claude-safe-receipt-',
+                                                 dir=os.environ['RUNNER_TEMP'])) / 'failure.json'
+              destination.write_text(encoded + '\n', encoding='utf-8')
+              with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as outputs:
+                  outputs.write('receipt_file=' + str(destination) + '\n')
+          except (OSError, KeyError):
+              print('::warning::Safe scanner failure receipt could not be retained.')
+          print(encoded)
+          FAILURE_RECEIPT_PY
+
+      - name: Upload safe scanner failure receipt
+        id: failure_receipt_upload
+        if: always() && steps.failure_receipt.outputs.receipt_file != ''
+        continue-on-error: true
+        timeout-minutes: 1
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: claude-security-failure-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+          path: ${{ steps.failure_receipt.outputs.receipt_file }}
+          retention-days: 7
+          if-no-files-found: error
+
   # Post the findings as claude[bot], on a token minted after the scan finished.
   #
   # Why a separate job: the App installation token is minted once at job start and

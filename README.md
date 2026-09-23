@@ -93,6 +93,17 @@ Exhausting a spending cap does not establish a clean security review or reduce
 the scope being scanned. If the bounded report helper cannot post, the existing
 deterministic comment fallback still publishes the findings.
 
+## Scanner failures
+
+When the AI scan fails, the workflow logs and retains a small failure receipt
+named for the PR and run attempt for seven days. It records only fixed SDK
+failure categories and allowed HTTP status codes, which can distinguish
+authentication, billing, model availability, capacity, and execution limits.
+It never includes provider error text, prompts, source, credentials, identifiers,
+or the SDK transcript. Missing typed error fields remain unclassified; a
+receipt is diagnostic evidence, not a completed security review. Receipt failures
+cannot change the existing scan or fail-closed gate.
+
 ## How long should a run take?
 
 **A run over 30 minutes is normal. It is not hung. Do not cancel it.**

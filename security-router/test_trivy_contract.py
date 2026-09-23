@@ -658,7 +658,12 @@ class Workflow(unittest.TestCase):
                    'scan': '6feefe1791163973a8cfb08415429e15ac4f41ed85bfdae08a382afb02172b3d',
                    'report': '070d2f550735d06be00d589a85ec9ede490caf31d21be2b1100a8c3f401ad5cd'}
         for name,digest in digests.items():
-            self.assertEqual(c.sha(c.canonical(self.workflow['jobs'][name]).encode()),digest,name)
+            job = copy.deepcopy(self.workflow['jobs'][name])
+            if name == 'scan':
+                # OAIP-634 adds diagnostic-only steps; every existing step stays pinned.
+                job['steps'] = [s for s in job['steps'] if s.get('id') not in
+                                {'failure_receipt', 'failure_receipt_upload'}]
+            self.assertEqual(c.sha(c.canonical(job).encode()),digest,name)
 
 
 # Retained original R26 artifact and derived-upload controls.
