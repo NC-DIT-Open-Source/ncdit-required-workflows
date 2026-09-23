@@ -1631,7 +1631,7 @@ jobs:
         # The gate owns the verdict. Without this the job aborts here on a timeout and skips
         # both the artifact upload and the gate's explanation.
         continue-on-error: true
-        uses: anthropics/claude-code-action@d07835ac7037978eb1aa67c6be18ed0883cea652 # v1
+        uses: anthropics/claude-code-action@9ca9355b36297178e28d37c799d1c9c8a28e6507 # v1 (Claude Code 2.1.280)
         with:
           # Bedrock mode: no token; use_bedrock reads the AWS creds from the step above.
           use_bedrock: ${{ vars.CLAUDE_AUTH_MODE == 'bedrock' && 'true' || '' }}
@@ -1681,6 +1681,7 @@ jobs:
           # posting — the scan reads untrusted diff content, so the narrower the
           # better.
           claude_args: >-
+            --model ${{ vars.CLAUDE_AUTH_MODE == 'bedrock' && 'us.anthropic.claude-opus-5-5' || 'claude-opus-5-5' }}
             --max-turns 200
             ${{ steps.budget.outputs.scan_args }}
             --allowedTools "Bash(git log:*),Bash(git diff:*),Bash(git rev-parse:*),Bash(git merge-base:*),Bash(git show:*)"
@@ -2107,7 +2108,7 @@ jobs:
         id: postcomment
         if: steps.check.outputs.post == 'true'
         continue-on-error: true # a failure here must not lose the findings
-        uses: anthropics/claude-code-action@d07835ac7037978eb1aa67c6be18ed0883cea652 # v1
+        uses: anthropics/claude-code-action@9ca9355b36297178e28d37c799d1c9c8a28e6507 # v1 (Claude Code 2.1.280)
         with:
           claude_code_oauth_token: ${{ vars.CLAUDE_AUTH_MODE == 'oauth' && secrets.CLAUDE_CODE_OAUTH_TOKEN || '' }}
           use_bedrock: ${{ vars.CLAUDE_AUTH_MODE == 'bedrock' && 'true' || '' }}

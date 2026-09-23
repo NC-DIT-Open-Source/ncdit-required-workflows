@@ -15,6 +15,10 @@ Built and maintained by NC DIT's Office of AI & Policy (OAIP).
 | 1. `precheck` | **Trivy** — dependency CVEs, IaC/Dockerfile misconfiguration, secrets, licenses — plus an **errors-only** lint pass | ~2 min, deterministic, no tokens | CRITICAL/HIGH |
 | 2. `scan` | **Claude Security** — AI review of the filtered PR diff | 15–90 min, probabilistic | CRITICAL/HIGH into the default branch |
 
+The AI scan explicitly uses **Claude Opus 5.5** (`claude-opus-5-5` for OAuth,
+`us.anthropic.claude-opus-5-5` for Bedrock). Security researchers and verifiers inherit
+that model; the plugin's Sonnet inventory helpers keep their existing model.
+
 Phase 2 carries `needs: precheck`, so anything a scanner can decide is decided first. A known
 CVE or a public storage bucket in the diff blocks in phase 1 and the expensive AI pass never
 starts.
