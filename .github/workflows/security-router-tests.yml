@@ -46,6 +46,9 @@ jobs:
       - name: Embedder tests
         run: python3 security-router/test_embed.py
 
+      - name: Dockerfile lint discovery and failure tests
+        run: python3 security-router/test_lint.py
+
       # Drives every branch of the gate, including both timeout policies, without waiting
       # out a real 90-minute step budget.
       - name: Gate branch tests
