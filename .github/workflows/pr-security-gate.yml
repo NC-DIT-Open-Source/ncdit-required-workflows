@@ -789,6 +789,8 @@ jobs:
           if compgen -G "**/Dockerfile*" > /dev/null; then
             echo "--- hadolint (errors only) ---"
             for df in **/Dockerfile*; do
+              # Dockerfile-specific ignore companions contain patterns, not build instructions.
+              [[ -f "$df" && "$df" != *.dockerignore ]] || continue
               docker run --rm -i hadolint/hadolint:latest-alpine \
                 hadolint --failure-threshold error - < "$df" \
                 || note "hadolint reported errors in $df"
