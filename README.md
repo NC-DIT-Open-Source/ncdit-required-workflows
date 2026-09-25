@@ -228,18 +228,19 @@ behavior and summary selection.
 
 Contract `ncdit-cybercoach-terminal-s3-receivers-v1` accepts only two exact
 AWS-0132 HIGH findings for terminal SSE-S3 server-access-log receivers. It
-requires the paired AWS-0089 no-recursion findings and the exact AWS-0010
-CloudFront adapter finding. All five remain in the raw results and SARIF.
+requires the paired AWS-0089 no-recursion findings, exact AWS-0010 CloudFront
+adapter finding, LOW Lambda@Edge AWS-0066 and MEDIUM CloudTrail AWS-0014. All
+seven remain in the raw results and SARIF.
 A missing, additional, duplicated or changed IaC finding blocks, as does any
 other HIGH/CRITICAL vulnerability, misconfiguration, secret or license finding.
 
-The policy pins the three reviewed resource files and both occurrence call
-sites by SHA-256. Those bytes were checked at CyberCoach source
-`153a1aac7f3e4fd67f966f02a1fdcb3afce35180`. This is provenance, **not** a permanent
+The policy pins eight reviewed resource/caller files by SHA-256. Current bytes
+and the seven exact IaC tuples were checked at CyberCoach source
+`46729756332e9681e22a24c9b59352cf9b34f5bf`. This is provenance, **not** a permanent
 whole-repository commit restriction: each run must match the actual PR event
 head, record its actual Git tree, and perform a complete fresh scan. Thus an
 unrelated committed source fix can proceed; changes to reviewed IaC bytes,
-call sites or the five findings require an owner-reviewed contract revision.
+call sites or the seven findings require an owner-reviewed contract revision.
 Dirty, ignored/untracked, linked or submodule content is rejected.
 
 The CyberCoach path installs SHA-pinned Trivy setup with caching disabled,
@@ -284,3 +285,13 @@ Run the existing router, gate, budget and embedder tests plus
 `python3 security-router/embed.py --check`, workflow parsing and actionlint.
 Do not edit generated Python in the workflow; the embedder protects both
 canonical sources against every quoted heredoc delimiter and both marker pairs.
+
+Current467 local evidence uses the authenticated Darwin/ARM64 Trivy0.70 binary
+for misconfiguration, secret and license scans plus its native SARIF converter.
+No vulnerability database was available locally, so this is not a fresh full
+vulnerability or hosted pass. The hosted Linux binary pin and all four scanner
+commands are unchanged. Historical full-scan/R26 fixtures remain untouched and
+exercise the same guard functions at their original policy constants; separate
+current467 tests bind the new raw reports and source bodies, reject stale tuples,
+and preserve the exact two HIGH removals and every other blocker. The archived
+local fixture records its limitations explicitly.
