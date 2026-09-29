@@ -229,18 +229,35 @@ behavior and summary selection.
 Contract `ncdit-cybercoach-terminal-s3-receivers-v1` accepts only two exact
 AWS-0132 HIGH findings for terminal SSE-S3 server-access-log receivers. It
 requires the paired AWS-0089 no-recursion findings, exact AWS-0010 CloudFront
-adapter finding, LOW Lambda@Edge AWS-0066 and MEDIUM CloudTrail AWS-0014. All
-seven remain in the raw results and SARIF.
+adapter finding, LOW Lambda@Edge and audit-projection AWS-0066, and both MEDIUM CloudTrail
+AWS-0014 observations. All nine remain in the raw results and SARIF.
 A missing, additional, duplicated or changed IaC finding blocks, as does any
 other HIGH/CRITICAL vulnerability, misconfiguration, secret or license finding.
 
-The policy pins eight reviewed resource/caller files by SHA-256. Current bytes
-and the seven exact IaC tuples were checked at CyberCoach source
-`46729756332e9681e22a24c9b59352cf9b34f5bf`. This is provenance, **not** a permanent
-whole-repository commit restriction: each run must match the actual PR event
+The policy pins thirteen reviewed resource/caller files by SHA-256, including
+DEV WAF membership and the exact projection and hosted-database callers. Current
+source bodies are retained from `8348d5b451211f79284b3f9120320cf3ea8c5129`.
+A genuine Trivy 0.70.0 configuration-only scan observes 2091 successful checks and
+nine findings: the same two SSE-S3 HIGH classifications, four LOW and three MEDIUM.
+The only changes from the 0fbcd contract are two exact source bindings and five
+observed location fields. The optional common-store logging selector moves the
+operator receiver's AWS-0089 location to lines 60–67 and AWS-0132 location to
+lines 89–100. The retained database trail's optional data-event selectors move
+its caller occurrence end from line 189 to 199. These changes do not alter either
+HIGH receiver exception, any finding identity or severity, or scanner behavior.
+Every field, source hash and caller occurrence remains bound exactly.
+
+Historical full/R26, source467, f90/WAF, f701 and 0fbcd reports remain unchanged and
+tested at their historical constants. `fixtures/8348-policy-source.json` retains
+the actual current config report, all thirteen exact public bodies, scanner
+identity and native terminal. Its repository JSON is an explicitly synthetic
+projection used only for native converter and classifier controls, not a claimed
+filesystem or vulnerability scan. A fresh complete hosted scan remains required.
+No DB/download or new HIGH exception was introduced by this source correction.
+This is provenance, **not** a permanent whole-repository commit restriction: each run must match the actual PR event
 head, record its actual Git tree, and perform a complete fresh scan. Thus an
 unrelated committed source fix can proceed; changes to reviewed IaC bytes,
-call sites or the seven findings require an owner-reviewed contract revision.
+call sites or the nine findings require an owner-reviewed contract revision.
 Dirty, ignored/untracked, linked or submodule content is rejected.
 
 The CyberCoach path installs SHA-pinned Trivy setup with caching disabled,
@@ -286,12 +303,26 @@ Run the existing router, gate, budget and embedder tests plus
 Do not edit generated Python in the workflow; the embedder protects both
 canonical sources against every quoted heredoc delimiter and both marker pairs.
 
-Current467 local evidence uses the authenticated Darwin/ARM64 Trivy0.70 binary
+Retained467 local evidence uses the authenticated Darwin/ARM64 Trivy0.70 binary
 for misconfiguration, secret and license scans plus its native SARIF converter.
-No vulnerability database was available locally, so this is not a fresh full
-vulnerability or hosted pass. The hosted Linux binary pin and all four scanner
-commands are unchanged. Historical full-scan/R26 fixtures remain untouched and
-exercise the same guard functions at their original policy constants; separate
-current467 tests bind the new raw reports and source bodies, reject stale tuples,
-and preserve the exact two HIGH removals and every other blocker. The archived
-local fixture records its limitations explicitly.
+No vulnerability database was available locally. The later WAF reports are
+scoped config scans only. Neither establishes a current full vulnerability or
+hosted pass. The hosted Linux binary pin and all four scanner commands are
+unchanged. Historical full-scan/R26 and467 fixtures remain untouched and exercise
+the same guard functions at their original policy constants. Separate tests bind
+the current source bodies and authentic partial WAF reports; explicitly labelled
+synthetic composition controls test the historical seven-finding contract without
+claiming a new scan. Stale coordinates, other HIGH/CRITICAL findings and malformed
+or suppressed results still block. Exactly two reviewed HIGH results are removed
+only from the derived upload; raw reports remain intact.
+
+The existing `test_trivy_contract.py` entry loads historical `test_trivy_f701.py`
+and current `test_trivy_0fbcd.py`.
+Current controls authenticate the real config report, all thirteen source bodies,
+all nine findings and exact source lines; they reject every missing/duplicate/
+changed identity, every source mutation and every other HIGH/CRITICAL category.
+Only the original two HIGH receiver identities can leave the derived upload;
+all raw findings remain intact. Historical tests are explicitly rebound to their
+original constants and cannot pass as proof of a current scan.
+
+CyberCoach source156dd refresh: the current contract binds fourteen public source bodies and the actual ten-finding Trivy 0.70.0 configuration scan. The two existing HIGH SSE-S3 receiver classifications are unchanged. The new MEDIUM AWS-0065 origin-bootstrap key-rotation finding remains visible in both raw and uploaded results; it is not remediated or a HIGH/CRITICAL exception. Historical 8348 fixtures/tests retain their original constants. Configuration-only and synthetic conversion tests do not establish a full dependency scan or hosted CI clearance.

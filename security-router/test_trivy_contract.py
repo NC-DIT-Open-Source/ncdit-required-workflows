@@ -25,8 +25,17 @@ DATA = json.loads(zlib.decompress(base64.b85decode(FIXTURE)))
 
 # Keep the historical real reports, source bodies and R26 artifact unchanged.
 # Exercise today's identical guard functions at their authenticated old policy
-# constants; the current policy is separately exercised below on actual467 data.
+# constants; later tests distinguish retained467 reports, WAF partial scans and synthetic composition.
+# Retain the complete f90/WAF controls at their authentic historical constants.
+# Production 0fbcd is tested independently in test_trivy_0fbcd.py; no old report
+# or synthetic f90 projection is relabeled a current scan.
 current = c
+f90_spec = importlib.util.spec_from_file_location('f90_historical_contract', HERE / 'trivy_contract.py')
+current = importlib.util.module_from_spec(f90_spec)
+f90_spec.loader.exec_module(current)
+f90_policy = current.decode((HERE / 'fixtures/f701-policy-source.json').read_bytes())['previous_policy']
+current.SOURCES = f90_policy['sources']
+current.EXPECTED = f90_policy['expected']
 historical_spec = importlib.util.spec_from_file_location('historical_contract', HERE / 'trivy_contract.py')
 c = importlib.util.module_from_spec(historical_spec)
 historical_spec.loader.exec_module(c)
@@ -806,8 +815,14 @@ class UploadView(unittest.TestCase):
 
 
 class CurrentSourceContract(unittest.TestCase):
-    """Fresh467 raw native reports; historical fixtures above are never relabelled."""
+    """Retained467 history, genuine scoped WAF reports and labelled synthetic composition."""
     def setUp(self):
+        current_fixture = HERE / 'fixtures/current-policy-source.json'
+        self.assertEqual(current.sha(current_fixture.read_bytes()), 'c0a6767490798a5c9d93f06ea4f76be5d77032997d5e830aecffcdbc9d0431c0')
+        current_provenance = current.decode(current_fixture.read_bytes())
+        self.assertEqual(current_provenance['source_head'], 'da05d44c5d49e8cc7b7636d72e05aade050a8acf')
+        self.current_source = current_provenance['sources']
+        self.waf_scan = current_provenance['waf_scan']
         artifact = HERE / 'fixtures/source467-local-trivy.zip'
         self.assertEqual(current.sha(artifact.read_bytes()),
                          'fd748760f43123b31ae067dcae237c19231e484f6c14a1932ddd09bd621a2dcb')
@@ -818,19 +833,35 @@ class CurrentSourceContract(unittest.TestCase):
                                 ('filesystem.json', 'config.json', 'trivy.sarif'))
             for name, digest in self.provenance['reports'].items():
                 self.assertEqual(current.sha(z.read(name)), digest)
+        historical_spec = importlib.util.spec_from_file_location('source467_contract', HERE / 'trivy_contract.py')
+        self.historical = importlib.util.module_from_spec(historical_spec)
+        historical_spec.loader.exec_module(self.historical)
+        self.historical.SOURCES = {p: current.sha(body.encode()) for p, body in self.source.items()}
+        self.historical.EXPECTED = [current.normalized(r, f, '') for r, f in findings(self.values[1])]
+        # Synthetic full-report control ONLY: retain467 categories/SARIF and apply
+        # the one independently observed caller coordinate. This is not a scan.
+        self.synthetic_values = copy.deepcopy(self.values)
+        for report in self.synthetic_values[:2]:
+            root_finding = [f for _, f in findings(report) if f['ID'] == 'AWS-0010']
+            self.assertEqual(len(root_finding), 1)
+            location = root_finding[0]['CauseMetadata']['Occurrences'][0]['Location']
+            self.assertEqual(location, {'StartLine': 107, 'EndLine': 122})
+            location['EndLine'] = 123
 
-    def test_real_current_source_and_unfiltered_native_reports(self):
+    def test_retained467_reports_remain_authentic_historical_evidence(self):
         self.assertEqual(self.provenance['target_head'], '46729756332e9681e22a24c9b59352cf9b34f5bf')
         self.assertFalse(self.provenance['vulnerability_scan_performed'])
         self.assertFalse(self.provenance['hosted_clearance'])
         self.assertEqual(self.provenance['actual_scanners'], ['misconfig', 'secret', 'license'])
-        self.assertEqual(set(current.SOURCES), set(c.SOURCES))
-        self.assertEqual({p: current.sha(v.encode()) for p, v in self.source.items()}, current.SOURCES)
+        self.assertEqual(set(current.SOURCES) - set(c.SOURCES), {
+            'infra/aws/modules/public-frontdoor/dev-state-network.tf',
+            'infra/aws/modules/public-frontdoor/dev-state-network.json'})
+        self.assertEqual({p: current.sha(v.encode()) for p, v in self.current_source.items()}, current.SOURCES)
         self.assertEqual([r for r in current.EXPECTED if r['severity']=='HIGH'],
                          [r for r in c.EXPECTED if r['severity']=='HIGH'])
         self.assertEqual(self.values[0]['Metadata']['Commit'], self.provenance['target_head'])
         before = copy.deepcopy(self.values)
-        decision, derived, removed = current.upload_view(*self.values)
+        decision, derived, removed = self.historical.upload_view(*self.values)
         self.assertEqual(self.values, before)
         self.assertEqual(len(decision['iac_findings']), 7)
         self.assertEqual(sum(decision['finding_counts_by_kind_and_severity'].values()), 280)
@@ -844,12 +875,14 @@ class CurrentSourceContract(unittest.TestCase):
     def test_historical_reports_cannot_claim_current_source_locations(self):
         with self.assertRaisesRegex(ValueError, 'exact-iac-inventory'):
             current.classify(DATA['actual_fs'], DATA['actual_config'], DATA['actual_sarif'])
+        with self.assertRaisesRegex(ValueError, 'exact-iac-inventory'):
+            current.classify(*self.values)
 
     def test_every_current_finding_missing_duplicate_changed_rejected(self):
         for which in (0, 1):
             for index in range(7):
                 for mode in ('missing', 'duplicate', 'severity', 'rule', 'resource', 'line', 'caller'):
-                    values = copy.deepcopy(self.values)
+                    values = copy.deepcopy(self.synthetic_values)
                     result, finding = findings(values[which])[index]
                     if mode=='missing': result['Misconfigurations'].remove(finding)
                     elif mode=='duplicate': result['Misconfigurations'].append(copy.deepcopy(finding))
@@ -864,7 +897,7 @@ class CurrentSourceContract(unittest.TestCase):
     def test_other_high_critical_categories_still_block(self):
         for kind in ('Vulnerabilities', 'Secrets', 'Licenses'):
             for severity in ('HIGH','CRITICAL'):
-                values=copy.deepcopy(self.values)
+                values=copy.deepcopy(self.synthetic_values)
                 values[0]['Results'].append(dict(Target='unreviewed.txt',Class='secret',Type='synthetic',**{kind:[dict(Severity=severity)]}))
                 with self.subTest(kind=kind,severity=severity),self.assertRaises(ValueError):current.classify(*values)
 
@@ -874,26 +907,103 @@ class CurrentSourceContract(unittest.TestCase):
             def git(*args):return subprocess.check_output(['git','-C',str(root),*args],stderr=subprocess.DEVNULL,text=True).strip()
             git('init','-q');git('config','user.name','synthetic');git('config','user.email','synthetic@example.invalid')
             git('remote','add','origin','https://github.com/'+current.REPOSITORY+'.git')
-            for name,body in self.source.items():
+            for name,body in self.current_source.items():
                 p=root/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(body)
-            git('add','.');git('commit','-qm','exact real467 source bodies in synthetic Git fixture')
+            git('add','.');git('commit','-qm','exact current public source bodies in synthetic Git fixture')
             self.assertEqual(current.source(root,git('rev-parse','HEAD'),env)['source_sha256'],current.SOURCES)
             for name in current.SOURCES:
                 p=root/name;old=p.read_bytes();p.write_bytes(old+b'\n# changed\n');git('add',name);git('commit','-qm','labelled source mutation')
                 with self.subTest(name=name),self.assertRaisesRegex(ValueError,'reviewed-source-hash'):current.source(root,git('rev-parse','HEAD'),env)
                 p.write_bytes(old);git('add',name);git('commit','-qm','restore exact fixture')
+            # Authentic former policy source cannot stand in for the current body.
+            historical_path = 'infra/aws/operator-database/stores.tf'
+            (root/historical_path).write_text(self.source[historical_path])
+            git('add',historical_path);git('commit','-qm','retained former source body')
+            with self.assertRaisesRegex(ValueError,'reviewed-source-hash'):
+                current.source(root,git('rev-parse','HEAD'),env)
+            (root/historical_path).write_text(self.current_source[historical_path])
+            git('add',historical_path);git('commit','-qm','restore current fixture')
             (root/'untracked').write_text('synthetic')
             with self.assertRaisesRegex(ValueError,'dirty-checkout'):current.source(root,git('rev-parse','HEAD'),env)
 
     def test_current_sarif_multiplicity_and_policy_fields_rejected(self):
         for mode in ('duplicate','missing','severity','suppression'):
-            values=copy.deepcopy(self.values);rows=values[2]['runs'][0]['results']
+            values=copy.deepcopy(self.synthetic_values);rows=values[2]['runs'][0]['results']
             if mode=='duplicate':rows.append(copy.deepcopy(rows[0]))
             elif mode=='missing':rows.pop()
             elif mode=='severity':rows[0]['level']='error'
             else:rows[0]['suppressions']=[{'kind':'external'}]
             with self.subTest(mode=mode),self.assertRaises(ValueError):current.upload_view(*values)
 
+    def test_actual_scoped_waf_reports_prove_only_the_coordinate_delta(self):
+        scan = self.waf_scan
+        self.assertEqual(scan['source']['head'], '2d7eb982a2b1c253ac0345449e94d64865eac7d7')
+        self.assertEqual(scan['author_report']['sha256'], '87e14eb3db7603f4d4059672860dc4ca74f88618b90dfebe1d674932bd3d3b5c')
+        self.assertEqual(scan['tool']['version'], '0.70.0')
+        self.assertFalse(scan['whole_repository_scan'])
+        self.assertFalse(scan['vulnerability_scan_performed'])
+        self.assertFalse(scan['hosted_clearance'])
+        expected = next(r for r in current.EXPECTED if r['rule'] == 'AWS-0010')
+        counts = {'root': 0, 'module': 0}
+        module_lines = self.current_source['infra/aws/modules/public-frontdoor/main.tf'].splitlines()
+        for name, retained in scan['reports'].items():
+            raw = retained['raw'].encode()
+            self.assertEqual((len(raw), current.sha(raw)), (retained['bytes'], retained['sha256']))
+            value = current.decode(raw)
+            self.assertEqual(value['Trivy']['Version'], '0.70.0')
+            self.assertEqual(value['ArtifactType'], 'filesystem')
+            self.assertEqual(sum(r['MisconfSummary']['Successes'] for r in value['Results']), 54)
+            self.assertEqual(sum(r['MisconfSummary']['Failures'] for r in value['Results']), 1)
+            self.assertEqual(len(findings(value)), 1)
+            result, finding = findings(value)[0]
+            result, finding = copy.deepcopy(result), copy.deepcopy(finding)
+            if name.startswith('shared-module-'):
+                counts['module'] += 1
+                self.assertEqual(result['Target'], 'main.tf')
+                self.assertEqual(finding['CauseMetadata']['Resource'], 'aws_cloudfront_distribution.application')
+                self.assertNotIn('Occurrences', finding['CauseMetadata'])
+                # Explicit scope projection only; retained raw body stays untouched.
+                finding['CauseMetadata']['Resource'] = 'module.public_frontdoor'
+                finding['CauseMetadata']['Occurrences'] = [{'Resource': 'module.public_frontdoor', 'Filename': 'public-frontdoor/main.tf', 'Location': {'StartLine': 107, 'EndLine': 123}}]
+            else:
+                counts['root'] += 1
+                self.assertEqual(result['Target'], '../modules/public-frontdoor/main.tf')
+                self.assertEqual(finding['CauseMetadata']['Occurrences'], [{'Resource': 'module.public_frontdoor', 'Filename': 'main.tf', 'Location': {'StartLine': 107, 'EndLine': 123}}])
+                finding['CauseMetadata']['Occurrences'][0]['Filename'] = 'public-frontdoor/main.tf'
+            result['Target'] = 'modules/public-frontdoor/main.tf'
+            self.assertEqual(current.normalized(result, finding, ''), expected)
+            for line in finding['CauseMetadata']['Code']['Lines']:
+                if not line['Truncated']:
+                    self.assertEqual(line['Content'], module_lines[line['Number'] - 1])
+        self.assertEqual(counts, {'root': 8, 'module': 3})
+        changed = [p for p, old in scan['scanned_source_sha256'].items() if current.SOURCES[p] != old]
+        self.assertEqual(changed, ['infra/aws/modules/public-frontdoor/dev-state-network.tf'])
+        delta = scan['current_source_delta']
+        body = self.current_source[delta['path']]
+        self.assertEqual(current.sha(body.encode()), delta['new_sha256'])
+        self.assertEqual(current.sha(body.replace('${each.value.source_name}:', '${each.value.source_name};').encode()), delta['old_sha256'])
+
+    def test_synthetic_composition_only_changes_observed_caller_coordinate(self):
+        old = copy.deepcopy(self.historical.EXPECTED)
+        next(r for r in old if r['rule'] == 'AWS-0010')['occurrences'][0]['end_line'] = 123
+        self.assertEqual(sorted(map(current.canonical, old)), sorted(map(current.canonical, current.EXPECTED)))
+        decision, derived, removed = current.upload_view(*self.synthetic_values)
+        self.assertEqual(len(removed), 2)
+        self.assertEqual([r for r in current.EXPECTED if r['severity'] == 'HIGH'], [r for r in c.EXPECTED if r['severity'] == 'HIGH'])
+        self.assertEqual(decision['unaccepted_high_critical_findings'], [])
+        for end in (122, 124):
+            values = copy.deepcopy(self.synthetic_values)
+            for report in values[:2]:
+                next(f for _, f in findings(report) if f['ID'] == 'AWS-0010')['CauseMetadata']['Occurrences'][0]['Location']['EndLine'] = end
+            with self.subTest(end=end), self.assertRaisesRegex(ValueError, 'exact-iac-inventory'):
+                current.classify(*values)
+
+
+# The original CI entry includes current 0fbcd controls and unchanged historical methods.
+from test_trivy_f701 import F701
+from test_trivy_0fbcd import Source0fbcd
+from test_trivy_8348 import Source8348
+from test_trivy_156dd import Source156dd
 
 if __name__=='__main__':
     unittest.main(verbosity=2)
