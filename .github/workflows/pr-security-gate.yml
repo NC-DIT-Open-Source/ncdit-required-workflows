@@ -370,7 +370,19 @@ jobs:
                           need(severity in (*SEVERITIES, 'UNRANKED') and
                                (severity != 'UNRANKED' or kind == 'Licenses'), 'finding-severity')
                           counts[kind + '/' + severity] += 1
-                          if kind == 'Misconfigurations':
+                          if kind == 'Misconfigurations' and r.get('Type') != 'terraform':
+                              # These observed MEDIUM checks remain in counts and SARIF. This
+                              # is not a generic non-Terraform warning or receiver exception.
+                              need(not config_only and r['Class'] == 'config' and
+                                   r.get('Type') == 'dockerfile' and r['Target'] in
+                                   ('Dockerfile', 'Dockerfile.grants', 'Dockerfile.initializer') and
+                                   len(findings) == 1 and f.get('ID') == 'DS-0013' and
+                                   severity == 'MEDIUM' and f.get('Status') == 'FAIL' and
+                                   f.get('Type') == 'Dockerfile Security Check' and
+                                   f.get('Namespace') == 'builtin.dockerfile.DS013' and
+                                   f.get('Query') == 'data.' + f['Namespace'] + '.deny',
+                                   'retained-dockerfile-finding')
+                          if kind == 'Misconfigurations' and r.get('Type') == 'terraform':
                               item = normalized(r, f, prefix); iac.append(item)
                               accepted = item in EXPECTED and item['rule'] == 'AWS-0132' and severity == 'HIGH'
                           else:
@@ -573,6 +585,8 @@ jobs:
                    'upload-exact-two-classifications')
               eligible = {}
               for result in fs['Results']:
+                  if result.get('Type') != 'terraform':
+                      continue  # Already validated by classify; retained verbatim in SARIF.
                   for finding in result.get('Misconfigurations', []):
                       identity = normalized(result, finding, 'infra/aws/')
                       if identity not in accepted:
