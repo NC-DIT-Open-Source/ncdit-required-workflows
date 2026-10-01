@@ -1,4 +1,4 @@
-"""Current public source/config controls; synthetic conversion is not hosted CI."""
+"""Historical156dd source/config controls; no current scan or hosted CI claim."""
 import copy
 import hashlib
 import importlib.util
@@ -16,6 +16,11 @@ spec.loader.exec_module(c)
 RAW = (H / 'fixtures/156dd-policy-source.json').read_bytes()
 assert hashlib.sha256(RAW).hexdigest() == 'fa21c616473f896cf8d973f677c52b7b5765da30b25b6cde71dcd1ef9fd083db'
 F = json.loads(RAW)
+# Preserve the authenticated historical policy independently of current source pins.
+# This module instance is private to these tests; production admission is unchanged.
+c.SOURCES = {p: c.sha(body.encode()) for p, body in F['sources'].items()}
+c.EXPECTED = [c.normalized(r, f, '') for r in F['actual_config']['Results']
+              for f in r.get('Misconfigurations', [])]
 
 
 def findings(report):
