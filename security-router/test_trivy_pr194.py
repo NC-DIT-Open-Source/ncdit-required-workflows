@@ -1,4 +1,4 @@
-"""Exact PR194 source admission; retained reports are compatibility controls only.
+"""Historical PR194 source admission; retained reports are compatibility controls only.
 
 No fresh scan is claimed. Historical156dd data stays unchanged and labelled;
 current source admission uses a separate unmodified production-module instance.
@@ -27,6 +27,9 @@ CHANGED = {
     'infra/aws/public-frontdoor/main.tf': '0863bede01821d13cc5c1dd24cec24a6e334425a9bbdb8c30027081eb1b575c6',
 }
 SOURCES = {**HISTORICAL['sources'], **F['sources']}
+# Historical PR194 compatibility instance; current PR197 is tested independently.
+c.SOURCES = {p: c.sha(body.encode()) for p, body in SOURCES.items()}
+c.EXPECTED = [c.normalized(r, f, '') for r, f in findings(HISTORICAL['actual_config'])]
 
 
 class SourcePR194(unittest.TestCase):

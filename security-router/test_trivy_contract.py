@@ -1005,6 +1005,7 @@ from test_trivy_0fbcd import Source0fbcd
 from test_trivy_8348 import Source8348
 from test_trivy_156dd import Source156dd
 from test_trivy_pr194 import SourcePR194
+from test_trivy_pr197 import SourcePR197, GuardReceipts
 
 if __name__=='__main__':
     unittest.main(verbosity=2)

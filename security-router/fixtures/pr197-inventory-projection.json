@@ -1,0 +1,3731 @@
+{
+  "baseline_actual_config_sha256": "0360194731c075d4ca067137bde0c16c779904607c8642d580dc7db4d0216984",
+  "baseline_fixture_sha256": "fa21c616473f896cf8d973f677c52b7b5765da30b25b6cde71dcd1ef9fd083db",
+  "baseline_native_terminal": {
+    "cleanup_errors": [],
+    "elapsed_seconds": 7.679035125067458,
+    "finished_at": "2026-09-29T16:51:45.911369+00:00",
+    "launched": true,
+    "native_exit_code": 0,
+    "reason": null,
+    "replay_allowed": false,
+    "rollback_claimed": false,
+    "status": "NATIVE_TERMINAL",
+    "stderr_sha256": "c3bea7737488e38280080d27ce22fc4cdcca2ba30cbe8bfd0f20fa8a57e5032e",
+    "stdout_sha256": "0360194731c075d4ca067137bde0c16c779904607c8642d580dc7db4d0216984",
+    "supervisor_reaped": true,
+    "supervisor_wait_status": 9
+  },
+  "baseline_scanner": {
+    "platform": "darwin/arm64",
+    "sha256": "3122de2c39d6ae433c2355a87508fb18dca637cf7f149e0006b63ddefb0cdc52",
+    "version": "0.70.0"
+  },
+  "classification": "PROJECTION",
+  "hosted_clearance": false,
+  "meaning": "Coordinate-only PROJECTION, not actual current-source scanner output. Filesystem/SARIF inputs were synthetic compatibility controls at baseline and remain synthetic.",
+  "projected_config": {
+    "ArtifactName": "/Users/mac/claude-work/apps/cybercoach/worktrees/root-trivy-156dd-source-input-r1/infra/aws",
+    "ArtifactType": "filesystem",
+    "CreatedAt": "2026-09-29T12:51:41.684131-04:00",
+    "ReportID": "01a0ee14-47f4-71f7-b7a1-1c449fa7f7ad",
+    "Results": [
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 51
+        },
+        "Target": "audit-foundation",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 51
+        },
+        "Target": "billing-cost-allocation",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 66
+        },
+        "Target": "bootstrap",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 52
+        },
+        "Target": "custody-authority-identities",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 52
+        },
+        "Target": "database-audit",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 51
+        },
+        "Target": "domains",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 65
+        },
+        "Target": "environment-custody",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 91
+        },
+        "Target": "environments/dev",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 91
+        },
+        "Target": "environments/production",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 51
+        },
+        "Target": "foundation-identities",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 51
+        },
+        "Target": "initializer-identities",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 51
+        },
+        "Target": "initializer-identities/operator",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 55
+        },
+        "Target": "initializer-publication",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 55
+        },
+        "Target": "initializer-task",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 55
+        },
+        "Target": "initializer-task/managed",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 2,
+          "Successes": 0
+        },
+        "Misconfigurations": [
+          {
+            "CauseMetadata": {
+              "Code": {
+                "Lines": [
+                  {
+                    "Annotation": "",
+                    "Content": "resource \"aws_s3_bucket\" \"receiver\" {",
+                    "FirstCause": true,
+                    "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_s3_bucket\"\u001b[0m \u001b[38;5;37m\"receiver\"\u001b[0m {",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 67,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  tags = local.cost_allocation_tags",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mtags\u001b[0m = local.cost_allocation_tags",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 68,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "",
+                    "FirstCause": false,
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 69,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  for_each            = local.receivers",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mfor_each\u001b[0m            = local.receivers",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 70,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  bucket              = each.value.bucket_name",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mbucket\u001b[0m              = \u001b[38;5;33meach\u001b[0m.value.bucket_name",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 71,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  force_destroy       = false",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mforce_destroy\u001b[0m       = \u001b[38;5;166mfalse",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 72,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  object_lock_enabled = false",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[0m  \u001b[38;5;245mobject_lock_enabled\u001b[0m = \u001b[38;5;166mfalse",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 73,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  lifecycle {",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[0m  lifecycle {",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 74,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "    prevent_destroy = true",
+                    "FirstCause": false,
+                    "Highlighted": "    \u001b[38;5;245mprevent_destroy\u001b[0m = \u001b[38;5;166mtrue",
+                    "IsCause": true,
+                    "LastCause": true,
+                    "Number": 75,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "",
+                    "FirstCause": false,
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 76,
+                    "Truncated": true
+                  }
+                ]
+              },
+              "EndLine": 81,
+              "Occurrences": [
+                {
+                  "Filename": "modules/records/operator-tests/composed/main.tf",
+                  "Location": {
+                    "EndLine": 43,
+                    "StartLine": 11
+                  },
+                  "Resource": "module.audit"
+                }
+              ],
+              "Provider": "AWS",
+              "Resource": "module.audit",
+              "Service": "s3",
+              "StartLine": 67
+            },
+            "Description": "Ensures S3 bucket logging is enabled for S3 buckets",
+            "ID": "AWS-0089",
+            "Message": "Bucket has logging disabled",
+            "Namespace": "builtin.aws.s3.aws0089",
+            "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0089",
+            "Query": "data.builtin.aws.s3.aws0089.deny",
+            "References": [
+              "https://docs.aws.amazon.com/AmazonS3/latest/userguide/ServerLogs.html",
+              "https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-server-access-logging.html",
+              "https://avd.aquasec.com/misconfig/aws-0089"
+            ],
+            "Resolution": "Add a logging block to the resource to enable access logging",
+            "Severity": "LOW",
+            "Status": "FAIL",
+            "Title": "S3 Bucket Logging",
+            "Type": "Terraform Security Check"
+          },
+          {
+            "CauseMetadata": {
+              "Code": {
+                "Lines": [
+                  {
+                    "Annotation": "",
+                    "Content": "resource \"aws_s3_bucket_server_side_encryption_configuration\" \"receiver\" {",
+                    "FirstCause": true,
+                    "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_s3_bucket_server_side_encryption_configuration\"\u001b[0m \u001b[38;5;37m\"receiver\"\u001b[0m {",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 103,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  for_each = local.receivers",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mfor_each\u001b[0m = local.receivers",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 104,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  bucket   = aws_s3_bucket.receiver[each.key].id",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mbucket\u001b[0m   = aws_s3_bucket.receiver[\u001b[38;5;33meach\u001b[0m.key].id",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 105,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  rule {",
+                    "FirstCause": false,
+                    "Highlighted": "  rule {",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 106,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "    apply_server_side_encryption_by_default { sse_algorithm = \"AES256\" }",
+                    "FirstCause": false,
+                    "Highlighted": "    apply_server_side_encryption_by_default { \u001b[38;5;245msse_algorithm\u001b[0m = \u001b[38;5;37m\"AES256\"\u001b[0m }",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 107,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  }",
+                    "FirstCause": false,
+                    "Highlighted": "  }",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 108,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  lifecycle { prevent_destroy = true }",
+                    "FirstCause": false,
+                    "Highlighted": "  lifecycle { \u001b[38;5;245mprevent_destroy\u001b[0m = \u001b[38;5;166mtrue\u001b[0m }",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 109,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "}",
+                    "FirstCause": false,
+                    "Highlighted": "}",
+                    "IsCause": true,
+                    "LastCause": true,
+                    "Number": 110,
+                    "Truncated": false
+                  }
+                ]
+              },
+              "EndLine": 110,
+              "Occurrences": [
+                {
+                  "Filename": "modules/records/operator-tests/composed/main.tf",
+                  "Location": {
+                    "EndLine": 43,
+                    "StartLine": 11
+                  },
+                  "Resource": "module.audit"
+                }
+              ],
+              "Provider": "AWS",
+              "Resource": "module.audit",
+              "Service": "s3",
+              "StartLine": 103
+            },
+            "Description": "Encryption using AWS keys provides protection for your S3 buckets. To gain greater control over encryption, such as key rotation, access policies, and auditability, use customer managed keys (CMKs) with SSE-KMS.\nNote that SSE-KMS is not supported for S3 server access logging destination buckets; in such cases, use SSE-S3 instead.\n",
+            "ID": "AWS-0132",
+            "Message": "Bucket does not encrypt data with a customer managed key.",
+            "Namespace": "builtin.aws.s3.aws0132",
+            "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0132",
+            "Query": "data.builtin.aws.s3.aws0132.deny",
+            "References": [
+              "https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucket-encryption.html",
+              "https://avd.aquasec.com/misconfig/aws-0132"
+            ],
+            "Resolution": "Use SSE-KMS with a customer managed key (CMK)",
+            "Severity": "HIGH",
+            "Status": "FAIL",
+            "Title": "S3 encryption should use Customer Managed Keys",
+            "Type": "Terraform Security Check"
+          }
+        ],
+        "Target": "modules/audit-foundation/receivers.tf",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 1,
+          "Successes": 0
+        },
+        "Misconfigurations": [
+          {
+            "CauseMetadata": {
+              "Code": {
+                "Lines": [
+                  {
+                    "Annotation": "",
+                    "Content": "resource \"aws_lambda_function\" \"delivery\" {",
+                    "FirstCause": true,
+                    "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_lambda_function\"\u001b[0m \u001b[38;5;37m\"delivery\"\u001b[0m {",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 117,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  function_name                  = local.name",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mfunction_name\u001b[0m                  = local.name",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 118,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  role                           = aws_iam_role.delivery.arn",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mrole\u001b[0m                           = aws_iam_role.delivery.arn",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 119,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  handler                        = \"delivery.handler\"",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mhandler\u001b[0m                        = \u001b[38;5;37m\"delivery.handler\"",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 120,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  runtime                        = \"python3.12\"",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[0m  \u001b[38;5;245mruntime\u001b[0m                        = \u001b[38;5;37m\"python3.12\"",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 121,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  architectures                  = [\"arm64\"]",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[0m  \u001b[38;5;245marchitectures\u001b[0m                  = [\u001b[38;5;37m\"arm64\"\u001b[0m]",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 122,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  filename                       = \"${path.module}/delivery.zip\"",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mfilename\u001b[0m                       = \u001b[38;5;37m\"\u001b[0m\u001b[38;5;37m${\u001b[0mpath.\u001b[38;5;33mmodule\u001b[0m\u001b[38;5;37m}\u001b[0m\u001b[38;5;37m/delivery.zip\"",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 123,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  source_code_hash               = filebase64sha256(\"${path.module}/delivery.zip\")",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[0m  \u001b[38;5;245msource_code_hash\u001b[0m               = \u001b[38;5;33mfilebase64sha256\u001b[0m(\u001b[38;5;37m\"\u001b[0m\u001b[38;5;37m${\u001b[0mpath.\u001b[38;5;33mmodule\u001b[0m\u001b[38;5;37m}\u001b[0m\u001b[38;5;37m/delivery.zip\"\u001b[0m)",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 124,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  timeout                        = 60",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mtimeout\u001b[0m                        = \u001b[38;5;37m60",
+                    "IsCause": true,
+                    "LastCause": true,
+                    "Number": 125,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "",
+                    "FirstCause": false,
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 126,
+                    "Truncated": true
+                  }
+                ]
+              },
+              "EndLine": 135,
+              "Occurrences": [
+                {
+                  "Filename": "database-audit/main.tf",
+                  "Location": {
+                    "EndLine": 89,
+                    "StartLine": 80
+                  },
+                  "Resource": "module.projection"
+                }
+              ],
+              "Provider": "AWS",
+              "Resource": "module.projection",
+              "Service": "lambda",
+              "StartLine": 117
+            },
+            "Description": "X-Ray tracing enables end-to-end debugging and analysis of all function activity. This will allow for identifying bottlenecks, slow downs and timeouts.\n",
+            "ID": "AWS-0066",
+            "Message": "Function does not have tracing enabled.",
+            "Namespace": "builtin.aws.lambda.aws0066",
+            "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0066",
+            "Query": "data.builtin.aws.lambda.aws0066.deny",
+            "References": [
+              "https://docs.aws.amazon.com/lambda/latest/dg/services-xray.html",
+              "https://avd.aquasec.com/misconfig/aws-0066"
+            ],
+            "Resolution": "Enable tracing",
+            "Severity": "LOW",
+            "Status": "FAIL",
+            "Title": "Lambda functions should have X-Ray tracing enabled",
+            "Type": "Terraform Security Check"
+          }
+        ],
+        "Target": "modules/database-audit-projection/main.tf",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 51
+        },
+        "Target": "modules/foundation-identities/profile-tests/composed",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 1,
+          "Successes": 0
+        },
+        "Misconfigurations": [
+          {
+            "CauseMetadata": {
+              "Code": {
+                "Lines": [
+                  {
+                    "Annotation": "",
+                    "Content": "resource \"aws_lambda_function\" \"origin\" {",
+                    "FirstCause": true,
+                    "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_lambda_function\"\u001b[0m \u001b[38;5;37m\"origin\"\u001b[0m {",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 71,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  tags             = local.cost_allocation_tags",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mtags\u001b[0m             = local.cost_allocation_tags",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 72,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  function_name    = local.name",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mfunction_name\u001b[0m    = local.name",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 73,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  role             = aws_iam_role.origin.arn",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mrole\u001b[0m             = aws_iam_role.origin.arn",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 74,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  runtime          = \"nodejs22.x\"",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mruntime\u001b[0m          = \u001b[38;5;37m\"nodejs22.x\"",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 75,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  handler          = \"index.handler\"",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[0m  \u001b[38;5;245mhandler\u001b[0m          = \u001b[38;5;33m\"index\u001b[0m.handler\u001b[38;5;37m\"",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 76,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  architectures    = [\"x86_64\"]",
+                    "FirstCause": false,
+                    "Highlighted": "  architectures    = [\"\u001b[0mx86_64\u001b[38;5;37m\"]",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 77,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  filename         = var.function_zip_path",
+                    "FirstCause": false,
+                    "Highlighted": "  filename         = var.function_zip_path",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 78,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  source_code_hash = var.function_zip_sha256_base64",
+                    "FirstCause": false,
+                    "Highlighted": "  source_code_hash = var.function_zip_sha256_base64",
+                    "IsCause": true,
+                    "LastCause": true,
+                    "Number": 79,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "",
+                    "FirstCause": false,
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 80,
+                    "Truncated": true
+                  }
+                ]
+              },
+              "EndLine": 91,
+              "Occurrences": [
+                {
+                  "Filename": "origin-authentication/main.tf",
+                  "Location": {
+                    "EndLine": 52,
+                    "StartLine": 37
+                  },
+                  "Resource": "module.origin_authentication"
+                }
+              ],
+              "Provider": "AWS",
+              "Resource": "module.origin_authentication",
+              "Service": "lambda",
+              "StartLine": 71
+            },
+            "Description": "X-Ray tracing enables end-to-end debugging and analysis of all function activity. This will allow for identifying bottlenecks, slow downs and timeouts.\n",
+            "ID": "AWS-0066",
+            "Message": "Function does not have tracing enabled.",
+            "Namespace": "builtin.aws.lambda.aws0066",
+            "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0066",
+            "Query": "data.builtin.aws.lambda.aws0066.deny",
+            "References": [
+              "https://docs.aws.amazon.com/lambda/latest/dg/services-xray.html",
+              "https://avd.aquasec.com/misconfig/aws-0066"
+            ],
+            "Resolution": "Enable tracing",
+            "Severity": "LOW",
+            "Status": "FAIL",
+            "Title": "Lambda functions should have X-Ray tracing enabled",
+            "Type": "Terraform Security Check"
+          }
+        ],
+        "Target": "modules/origin-authentication/main.tf",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 1,
+          "Successes": 0
+        },
+        "Misconfigurations": [
+          {
+            "CauseMetadata": {
+              "Code": {
+                "Lines": [
+                  {
+                    "Annotation": "",
+                    "Content": "resource \"aws_cloudfront_distribution\" \"application\" {",
+                    "FirstCause": true,
+                    "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_cloudfront_distribution\"\u001b[0m \u001b[38;5;37m\"application\"\u001b[0m {",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 70,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  provider            = aws.edge",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[38;5;33m  provider\u001b[0m            \u001b[38;5;245m=\u001b[0m aws.edge",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 71,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  enabled             = var.enabled",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245menabled\u001b[0m             = \u001b[38;5;33mvar\u001b[0m.enabled",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 72,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  comment             = local.name",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mcomment\u001b[0m             = local.name",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 73,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  aliases             = [var.origin.hostname]",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245maliases\u001b[0m             = [\u001b[38;5;33mvar\u001b[0m.origin.hostname]",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 74,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  is_ipv6_enabled     = true",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mis_ipv6_enabled\u001b[0m     = \u001b[38;5;166mtrue",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 75,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  http_version        = \"http2and3\"",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[0m  \u001b[38;5;245mhttp_version\u001b[0m        = \u001b[38;5;37m\"http2and3\"",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 76,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  web_acl_id          = aws_wafv2_web_acl.edge.arn",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[0m  \u001b[38;5;245mweb_acl_id\u001b[0m          = aws_wafv2_web_acl.edge.arn",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 77,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  wait_for_deployment = true",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mwait_for_deployment\u001b[0m = \u001b[38;5;166mtrue",
+                    "IsCause": true,
+                    "LastCause": true,
+                    "Number": 78,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "",
+                    "FirstCause": false,
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 79,
+                    "Truncated": true
+                  }
+                ]
+              },
+              "EndLine": 132,
+              "Occurrences": [
+                {
+                  "Filename": "public-frontdoor/main.tf",
+                  "Location": {
+                    "EndLine": 136,
+                    "StartLine": 120
+                  },
+                  "Resource": "module.public_frontdoor"
+                }
+              ],
+              "Provider": "AWS",
+              "Resource": "module.public_frontdoor",
+              "Service": "cloudfront",
+              "StartLine": 70
+            },
+            "Description": "You should configure CloudFront Access Logging to create log files that contain detailed information about every user request that CloudFront receives\n",
+            "ID": "AWS-0010",
+            "Message": "Distribution does not have logging enabled",
+            "Namespace": "builtin.aws.cloudfront.aws0010",
+            "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0010",
+            "Query": "data.builtin.aws.cloudfront.aws0010.deny",
+            "References": [
+              "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/AccessLogs.html",
+              "https://avd.aquasec.com/misconfig/aws-0010"
+            ],
+            "Resolution": "Enable logging for CloudFront distributions",
+            "Severity": "MEDIUM",
+            "Status": "FAIL",
+            "Title": "Cloudfront distribution should have Access Logging configured",
+            "Type": "Terraform Security Check"
+          }
+        ],
+        "Target": "modules/public-frontdoor/main.tf",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 69
+        },
+        "Target": "modules/records/operator-tests/composed",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 51
+        },
+        "Target": "operator-bootstrap",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 71
+        },
+        "Target": "operator-database",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 71
+        },
+        "Target": "operator-database/hosted",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 51
+        },
+        "Target": "operator-database/hosted/runner-foundation-policy/tests/harness",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 1,
+          "Successes": 0
+        },
+        "Misconfigurations": [
+          {
+            "CauseMetadata": {
+              "Code": {
+                "Lines": [
+                  {
+                    "Annotation": "",
+                    "Content": "resource \"aws_cloudtrail\" \"database\" {",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_cloudtrail\"\u001b[0m \u001b[38;5;37m\"database\"\u001b[0m {",
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 165,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "",
+                    "FirstCause": false,
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 166,
+                    "Truncated": true
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  is_multi_region_trail         = false",
+                    "FirstCause": true,
+                    "Highlighted": "\u001b[0m  \u001b[38;5;245mis_multi_region_trail\u001b[0m         = \u001b[38;5;166mfalse",
+                    "IsCause": true,
+                    "LastCause": true,
+                    "Number": 172,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "",
+                    "FirstCause": false,
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 184,
+                    "Truncated": true
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "}",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[0m}",
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 185,
+                    "Truncated": false
+                  }
+                ]
+              },
+              "EndLine": 172,
+              "Occurrences": [
+                {
+                  "Filename": "operator-database/hosted/stores.tf",
+                  "Location": {
+                    "EndLine": 185,
+                    "StartLine": 165
+                  },
+                  "Resource": "aws_cloudtrail.database[0]"
+                }
+              ],
+              "Provider": "AWS",
+              "Resource": "aws_cloudtrail.database[0]",
+              "Service": "cloudtrail",
+              "StartLine": 172
+            },
+            "Description": "Activity could be happening in your account in a different region. When creating Cloudtrail in the AWS Management Console the trail is configured by default to be multi-region, this isn't the case with the Terraform resource. Cloudtrail should cover the full AWS account to ensure you can track changes in regions you are not actively operating in.\n",
+            "ID": "AWS-0014",
+            "Message": "Trail is not enabled across all regions.",
+            "Namespace": "builtin.aws.cloudtrail.aws0014",
+            "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0014",
+            "Query": "data.builtin.aws.cloudtrail.aws0014.deny",
+            "References": [
+              "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/receive-cloudtrail-log-files-from-multiple-regions.html",
+              "https://avd.aquasec.com/misconfig/aws-0014"
+            ],
+            "Resolution": "Enable Cloudtrail in all regions",
+            "Severity": "MEDIUM",
+            "Status": "FAIL",
+            "Title": "Cloudtrail should be enabled in all regions regardless of where your AWS resources are generally homed",
+            "Type": "Terraform Security Check"
+          }
+        ],
+        "Target": "operator-database/hosted/stores.tf",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 1,
+          "Successes": 0
+        },
+        "Misconfigurations": [
+          {
+            "CauseMetadata": {
+              "Code": {
+                "Lines": [
+                  {
+                    "Annotation": "",
+                    "Content": "resource \"aws_cloudtrail\" \"database\" {",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_cloudtrail\"\u001b[0m \u001b[38;5;37m\"database\"\u001b[0m {",
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 169,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "",
+                    "FirstCause": false,
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 170,
+                    "Truncated": true
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  is_multi_region_trail         = false",
+                    "FirstCause": true,
+                    "Highlighted": "\u001b[0m  \u001b[38;5;245mis_multi_region_trail\u001b[0m         = \u001b[38;5;166mfalse",
+                    "IsCause": true,
+                    "LastCause": true,
+                    "Number": 176,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "",
+                    "FirstCause": false,
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 198,
+                    "Truncated": true
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "}",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[0m}",
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 199,
+                    "Truncated": false
+                  }
+                ]
+              },
+              "EndLine": 176,
+              "Occurrences": [
+                {
+                  "Filename": "operator-database/stores.tf",
+                  "Location": {
+                    "EndLine": 199,
+                    "StartLine": 169
+                  },
+                  "Resource": "aws_cloudtrail.database[0]"
+                }
+              ],
+              "Provider": "AWS",
+              "Resource": "aws_cloudtrail.database[0]",
+              "Service": "cloudtrail",
+              "StartLine": 176
+            },
+            "Description": "Activity could be happening in your account in a different region. When creating Cloudtrail in the AWS Management Console the trail is configured by default to be multi-region, this isn't the case with the Terraform resource. Cloudtrail should cover the full AWS account to ensure you can track changes in regions you are not actively operating in.\n",
+            "ID": "AWS-0014",
+            "Message": "Trail is not enabled across all regions.",
+            "Namespace": "builtin.aws.cloudtrail.aws0014",
+            "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0014",
+            "Query": "data.builtin.aws.cloudtrail.aws0014.deny",
+            "References": [
+              "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/receive-cloudtrail-log-files-from-multiple-regions.html",
+              "https://avd.aquasec.com/misconfig/aws-0014"
+            ],
+            "Resolution": "Enable Cloudtrail in all regions",
+            "Severity": "MEDIUM",
+            "Status": "FAIL",
+            "Title": "Cloudtrail should be enabled in all regions regardless of where your AWS resources are generally homed",
+            "Type": "Terraform Security Check"
+          }
+        ],
+        "Target": "operator-database/stores.tf",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 64
+        },
+        "Target": "operator-foundations",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 2,
+          "Successes": 0
+        },
+        "Misconfigurations": [
+          {
+            "CauseMetadata": {
+              "Code": {
+                "Lines": [
+                  {
+                    "Annotation": "",
+                    "Content": "resource \"aws_s3_bucket\" \"access_logs\" {",
+                    "FirstCause": true,
+                    "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_s3_bucket\"\u001b[0m \u001b[38;5;37m\"access_logs\"\u001b[0m {",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 61,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  bucket              = local.access_log_bucket",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mbucket\u001b[0m              = local.access_log_bucket",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 62,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  object_lock_enabled = false",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mobject_lock_enabled\u001b[0m = \u001b[38;5;166mfalse",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 63,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  force_destroy       = false",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[0m  \u001b[38;5;245mforce_destroy\u001b[0m       = \u001b[38;5;166mfalse",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 64,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  tags                = local.tags",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[0m  \u001b[38;5;245mtags\u001b[0m                = local.tags",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 65,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  lifecycle { prevent_destroy = true }",
+                    "FirstCause": false,
+                    "Highlighted": "  lifecycle { \u001b[38;5;245mprevent_destroy\u001b[0m = \u001b[38;5;166mtrue\u001b[0m }",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 66,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  depends_on = [terraform_data.guard]",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mdepends_on\u001b[0m = [terraform_data.guard]",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 67,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "}",
+                    "FirstCause": false,
+                    "Highlighted": "}",
+                    "IsCause": true,
+                    "LastCause": true,
+                    "Number": 68,
+                    "Truncated": false
+                  }
+                ]
+              },
+              "EndLine": 68,
+              "Provider": "AWS",
+              "Resource": "aws_s3_bucket.access_logs",
+              "Service": "s3",
+              "StartLine": 61
+            },
+            "Description": "Ensures S3 bucket logging is enabled for S3 buckets",
+            "ID": "AWS-0089",
+            "Message": "Bucket has logging disabled",
+            "Namespace": "builtin.aws.s3.aws0089",
+            "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0089",
+            "Query": "data.builtin.aws.s3.aws0089.deny",
+            "References": [
+              "https://docs.aws.amazon.com/AmazonS3/latest/userguide/ServerLogs.html",
+              "https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-server-access-logging.html",
+              "https://avd.aquasec.com/misconfig/aws-0089"
+            ],
+            "Resolution": "Add a logging block to the resource to enable access logging",
+            "Severity": "LOW",
+            "Status": "FAIL",
+            "Title": "S3 Bucket Logging",
+            "Type": "Terraform Security Check"
+          },
+          {
+            "CauseMetadata": {
+              "Code": {
+                "Lines": [
+                  {
+                    "Annotation": "",
+                    "Content": "resource \"aws_s3_bucket_server_side_encryption_configuration\" \"access_logs\" {",
+                    "FirstCause": true,
+                    "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_s3_bucket_server_side_encryption_configuration\"\u001b[0m \u001b[38;5;37m\"access_logs\"\u001b[0m {",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 90,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  bucket = aws_s3_bucket.access_logs.bucket",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mbucket\u001b[0m = aws_s3_bucket.access_logs.bucket",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 91,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  rule {",
+                    "FirstCause": false,
+                    "Highlighted": "  rule {",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 92,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "    apply_server_side_encryption_by_default {",
+                    "FirstCause": false,
+                    "Highlighted": "    apply_server_side_encryption_by_default {",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 93,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "      sse_algorithm     = \"AES256\"",
+                    "FirstCause": false,
+                    "Highlighted": "      \u001b[38;5;245msse_algorithm\u001b[0m     = \u001b[38;5;37m\"AES256\"",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 94,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "      kms_master_key_id = \"\"",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[0m      \u001b[38;5;245mkms_master_key_id\u001b[0m = \u001b[38;5;37m\"\"",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 95,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "    }",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[0m    }",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 96,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "    bucket_key_enabled = false",
+                    "FirstCause": false,
+                    "Highlighted": "    \u001b[38;5;245mbucket_key_enabled\u001b[0m = \u001b[38;5;166mfalse",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 97,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  }",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[0m  }",
+                    "IsCause": true,
+                    "LastCause": true,
+                    "Number": 98,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "",
+                    "FirstCause": false,
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 99,
+                    "Truncated": true
+                  }
+                ]
+              },
+              "EndLine": 101,
+              "Provider": "AWS",
+              "Resource": "aws_s3_bucket_server_side_encryption_configuration.access_logs",
+              "Service": "s3",
+              "StartLine": 90
+            },
+            "Description": "Encryption using AWS keys provides protection for your S3 buckets. To gain greater control over encryption, such as key rotation, access policies, and auditability, use customer managed keys (CMKs) with SSE-KMS.\nNote that SSE-KMS is not supported for S3 server access logging destination buckets; in such cases, use SSE-S3 instead.\n",
+            "ID": "AWS-0132",
+            "Message": "Bucket does not encrypt data with a customer managed key.",
+            "Namespace": "builtin.aws.s3.aws0132",
+            "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0132",
+            "Query": "data.builtin.aws.s3.aws0132.deny",
+            "References": [
+              "https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucket-encryption.html",
+              "https://avd.aquasec.com/misconfig/aws-0132"
+            ],
+            "Resolution": "Use SSE-KMS with a customer managed key (CMK)",
+            "Severity": "HIGH",
+            "Status": "FAIL",
+            "Title": "S3 encryption should use Customer Managed Keys",
+            "Type": "Terraform Security Check"
+          }
+        ],
+        "Target": "operator-foundations/access-logging.tf",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 73
+        },
+        "Target": "operator-network",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 52
+        },
+        "Target": "origin-authentication",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 52
+        },
+        "Target": "origin-bootstrap",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 1,
+          "Successes": 0
+        },
+        "Misconfigurations": [
+          {
+            "CauseMetadata": {
+              "Code": {
+                "Lines": [
+                  {
+                    "Annotation": "",
+                    "Content": "resource \"aws_kms_key\" \"credential\" {",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_kms_key\"\u001b[0m \u001b[38;5;37m\"credential\"\u001b[0m {",
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 146,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "",
+                    "FirstCause": false,
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 147,
+                    "Truncated": true
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  enable_key_rotation                = false",
+                    "FirstCause": true,
+                    "Highlighted": "\u001b[0m  \u001b[38;5;245menable_key_rotation\u001b[0m                = \u001b[38;5;166mfalse",
+                    "IsCause": true,
+                    "LastCause": true,
+                    "Number": 153,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "",
+                    "FirstCause": false,
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 190,
+                    "Truncated": true
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "}",
+                    "FirstCause": false,
+                    "Highlighted": "}",
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 191,
+                    "Truncated": false
+                  }
+                ]
+              },
+              "EndLine": 153,
+              "Occurrences": [
+                {
+                  "Filename": "origin-bootstrap/main.tf",
+                  "Location": {
+                    "EndLine": 191,
+                    "StartLine": 146
+                  },
+                  "Resource": "aws_kms_key.credential"
+                }
+              ],
+              "Provider": "AWS",
+              "Resource": "aws_kms_key.credential",
+              "Service": "kms",
+              "StartLine": 153
+            },
+            "Description": "You should configure your KMS keys to auto rotate to maintain security and defend against compromise.\n",
+            "ID": "AWS-0065",
+            "Message": "Key does not have rotation enabled.",
+            "Namespace": "builtin.aws.kms.aws0065",
+            "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0065",
+            "Query": "data.builtin.aws.kms.aws0065.deny",
+            "References": [
+              "https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html",
+              "https://avd.aquasec.com/misconfig/aws-0065"
+            ],
+            "Resolution": "Configure KMS key to auto rotate",
+            "Severity": "MEDIUM",
+            "Status": "FAIL",
+            "Title": "A KMS key is not configured to auto-rotate.",
+            "Type": "Terraform Security Check"
+          }
+        ],
+        "Target": "origin-bootstrap/main.tf",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 76
+        },
+        "Target": "platform",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 51
+        },
+        "Target": "production-dns-zone",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 54
+        },
+        "Target": "public-frontdoor",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 53
+        },
+        "Target": "public-log-custody",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 51
+        },
+        "Target": "public-provisioning",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 24
+        },
+        "Target": "public-provisioning/tests/dev.json",
+        "Type": "cloudformation"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 24
+        },
+        "Target": "public-provisioning/tests/production.json",
+        "Type": "cloudformation"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 68
+        },
+        "Target": "records",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 61
+        },
+        "Target": "retained-assets",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 61
+        },
+        "Target": "retained-assets/managed",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 65
+        },
+        "Target": "retained-assets/operator",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 62
+        },
+        "Target": "seed",
+        "Type": "terraform"
+      }
+    ],
+    "SchemaVersion": 2,
+    "Trivy": {
+      "Version": "0.70.0"
+    }
+  },
+  "projected_filesystem": {
+    "ArtifactName": "/Users/mac/claude-work/apps/cybercoach/worktrees/root-trivy-156dd-source-input-r1/infra/aws",
+    "ArtifactType": "repository",
+    "CreatedAt": "2026-09-29T12:51:41.684131-04:00",
+    "Metadata": {
+      "Commit": "156ddce799adaa24f2a6c3af6bfc0cbdab8c021b",
+      "RepoURL": "https://github.com/NC-DIT-Open-Source/CyberCoach-NC.git"
+    },
+    "ReportID": "01a0ee14-47f4-71f7-b7a1-1c449fa7f7ad",
+    "Results": [
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 51
+        },
+        "Target": "infra/aws/audit-foundation",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 51
+        },
+        "Target": "infra/aws/billing-cost-allocation",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 66
+        },
+        "Target": "infra/aws/bootstrap",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 52
+        },
+        "Target": "infra/aws/custody-authority-identities",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 52
+        },
+        "Target": "infra/aws/database-audit",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 51
+        },
+        "Target": "infra/aws/domains",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 65
+        },
+        "Target": "infra/aws/environment-custody",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 91
+        },
+        "Target": "infra/aws/environments/dev",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 91
+        },
+        "Target": "infra/aws/environments/production",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 51
+        },
+        "Target": "infra/aws/foundation-identities",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 51
+        },
+        "Target": "infra/aws/initializer-identities",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 51
+        },
+        "Target": "infra/aws/initializer-identities/operator",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 55
+        },
+        "Target": "infra/aws/initializer-publication",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 55
+        },
+        "Target": "infra/aws/initializer-task",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 55
+        },
+        "Target": "infra/aws/initializer-task/managed",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 2,
+          "Successes": 0
+        },
+        "Misconfigurations": [
+          {
+            "CauseMetadata": {
+              "Code": {
+                "Lines": [
+                  {
+                    "Annotation": "",
+                    "Content": "resource \"aws_s3_bucket\" \"receiver\" {",
+                    "FirstCause": true,
+                    "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_s3_bucket\"\u001b[0m \u001b[38;5;37m\"receiver\"\u001b[0m {",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 67,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  tags = local.cost_allocation_tags",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mtags\u001b[0m = local.cost_allocation_tags",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 68,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "",
+                    "FirstCause": false,
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 69,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  for_each            = local.receivers",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mfor_each\u001b[0m            = local.receivers",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 70,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  bucket              = each.value.bucket_name",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mbucket\u001b[0m              = \u001b[38;5;33meach\u001b[0m.value.bucket_name",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 71,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  force_destroy       = false",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mforce_destroy\u001b[0m       = \u001b[38;5;166mfalse",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 72,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  object_lock_enabled = false",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[0m  \u001b[38;5;245mobject_lock_enabled\u001b[0m = \u001b[38;5;166mfalse",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 73,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  lifecycle {",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[0m  lifecycle {",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 74,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "    prevent_destroy = true",
+                    "FirstCause": false,
+                    "Highlighted": "    \u001b[38;5;245mprevent_destroy\u001b[0m = \u001b[38;5;166mtrue",
+                    "IsCause": true,
+                    "LastCause": true,
+                    "Number": 75,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "",
+                    "FirstCause": false,
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 76,
+                    "Truncated": true
+                  }
+                ]
+              },
+              "EndLine": 81,
+              "Occurrences": [
+                {
+                  "Filename": "infra/aws/modules/records/operator-tests/composed/main.tf",
+                  "Location": {
+                    "EndLine": 43,
+                    "StartLine": 11
+                  },
+                  "Resource": "module.audit"
+                }
+              ],
+              "Provider": "AWS",
+              "Resource": "module.audit",
+              "Service": "s3",
+              "StartLine": 67
+            },
+            "Description": "Ensures S3 bucket logging is enabled for S3 buckets",
+            "ID": "AWS-0089",
+            "Message": "Bucket has logging disabled",
+            "Namespace": "builtin.aws.s3.aws0089",
+            "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0089",
+            "Query": "data.builtin.aws.s3.aws0089.deny",
+            "References": [
+              "https://docs.aws.amazon.com/AmazonS3/latest/userguide/ServerLogs.html",
+              "https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-server-access-logging.html",
+              "https://avd.aquasec.com/misconfig/aws-0089"
+            ],
+            "Resolution": "Add a logging block to the resource to enable access logging",
+            "Severity": "LOW",
+            "Status": "FAIL",
+            "Title": "S3 Bucket Logging",
+            "Type": "Terraform Security Check"
+          },
+          {
+            "CauseMetadata": {
+              "Code": {
+                "Lines": [
+                  {
+                    "Annotation": "",
+                    "Content": "resource \"aws_s3_bucket_server_side_encryption_configuration\" \"receiver\" {",
+                    "FirstCause": true,
+                    "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_s3_bucket_server_side_encryption_configuration\"\u001b[0m \u001b[38;5;37m\"receiver\"\u001b[0m {",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 103,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  for_each = local.receivers",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mfor_each\u001b[0m = local.receivers",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 104,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  bucket   = aws_s3_bucket.receiver[each.key].id",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mbucket\u001b[0m   = aws_s3_bucket.receiver[\u001b[38;5;33meach\u001b[0m.key].id",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 105,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  rule {",
+                    "FirstCause": false,
+                    "Highlighted": "  rule {",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 106,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "    apply_server_side_encryption_by_default { sse_algorithm = \"AES256\" }",
+                    "FirstCause": false,
+                    "Highlighted": "    apply_server_side_encryption_by_default { \u001b[38;5;245msse_algorithm\u001b[0m = \u001b[38;5;37m\"AES256\"\u001b[0m }",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 107,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  }",
+                    "FirstCause": false,
+                    "Highlighted": "  }",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 108,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  lifecycle { prevent_destroy = true }",
+                    "FirstCause": false,
+                    "Highlighted": "  lifecycle { \u001b[38;5;245mprevent_destroy\u001b[0m = \u001b[38;5;166mtrue\u001b[0m }",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 109,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "}",
+                    "FirstCause": false,
+                    "Highlighted": "}",
+                    "IsCause": true,
+                    "LastCause": true,
+                    "Number": 110,
+                    "Truncated": false
+                  }
+                ]
+              },
+              "EndLine": 110,
+              "Occurrences": [
+                {
+                  "Filename": "infra/aws/modules/records/operator-tests/composed/main.tf",
+                  "Location": {
+                    "EndLine": 43,
+                    "StartLine": 11
+                  },
+                  "Resource": "module.audit"
+                }
+              ],
+              "Provider": "AWS",
+              "Resource": "module.audit",
+              "Service": "s3",
+              "StartLine": 103
+            },
+            "Description": "Encryption using AWS keys provides protection for your S3 buckets. To gain greater control over encryption, such as key rotation, access policies, and auditability, use customer managed keys (CMKs) with SSE-KMS.\nNote that SSE-KMS is not supported for S3 server access logging destination buckets; in such cases, use SSE-S3 instead.\n",
+            "ID": "AWS-0132",
+            "Message": "Bucket does not encrypt data with a customer managed key.",
+            "Namespace": "builtin.aws.s3.aws0132",
+            "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0132",
+            "Query": "data.builtin.aws.s3.aws0132.deny",
+            "References": [
+              "https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucket-encryption.html",
+              "https://avd.aquasec.com/misconfig/aws-0132"
+            ],
+            "Resolution": "Use SSE-KMS with a customer managed key (CMK)",
+            "Severity": "HIGH",
+            "Status": "FAIL",
+            "Title": "S3 encryption should use Customer Managed Keys",
+            "Type": "Terraform Security Check"
+          }
+        ],
+        "Target": "infra/aws/modules/audit-foundation/receivers.tf",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 1,
+          "Successes": 0
+        },
+        "Misconfigurations": [
+          {
+            "CauseMetadata": {
+              "Code": {
+                "Lines": [
+                  {
+                    "Annotation": "",
+                    "Content": "resource \"aws_lambda_function\" \"delivery\" {",
+                    "FirstCause": true,
+                    "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_lambda_function\"\u001b[0m \u001b[38;5;37m\"delivery\"\u001b[0m {",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 117,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  function_name                  = local.name",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mfunction_name\u001b[0m                  = local.name",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 118,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  role                           = aws_iam_role.delivery.arn",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mrole\u001b[0m                           = aws_iam_role.delivery.arn",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 119,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  handler                        = \"delivery.handler\"",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mhandler\u001b[0m                        = \u001b[38;5;37m\"delivery.handler\"",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 120,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  runtime                        = \"python3.12\"",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[0m  \u001b[38;5;245mruntime\u001b[0m                        = \u001b[38;5;37m\"python3.12\"",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 121,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  architectures                  = [\"arm64\"]",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[0m  \u001b[38;5;245marchitectures\u001b[0m                  = [\u001b[38;5;37m\"arm64\"\u001b[0m]",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 122,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  filename                       = \"${path.module}/delivery.zip\"",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mfilename\u001b[0m                       = \u001b[38;5;37m\"\u001b[0m\u001b[38;5;37m${\u001b[0mpath.\u001b[38;5;33mmodule\u001b[0m\u001b[38;5;37m}\u001b[0m\u001b[38;5;37m/delivery.zip\"",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 123,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  source_code_hash               = filebase64sha256(\"${path.module}/delivery.zip\")",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[0m  \u001b[38;5;245msource_code_hash\u001b[0m               = \u001b[38;5;33mfilebase64sha256\u001b[0m(\u001b[38;5;37m\"\u001b[0m\u001b[38;5;37m${\u001b[0mpath.\u001b[38;5;33mmodule\u001b[0m\u001b[38;5;37m}\u001b[0m\u001b[38;5;37m/delivery.zip\"\u001b[0m)",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 124,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  timeout                        = 60",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mtimeout\u001b[0m                        = \u001b[38;5;37m60",
+                    "IsCause": true,
+                    "LastCause": true,
+                    "Number": 125,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "",
+                    "FirstCause": false,
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 126,
+                    "Truncated": true
+                  }
+                ]
+              },
+              "EndLine": 135,
+              "Occurrences": [
+                {
+                  "Filename": "infra/aws/database-audit/main.tf",
+                  "Location": {
+                    "EndLine": 89,
+                    "StartLine": 80
+                  },
+                  "Resource": "module.projection"
+                }
+              ],
+              "Provider": "AWS",
+              "Resource": "module.projection",
+              "Service": "lambda",
+              "StartLine": 117
+            },
+            "Description": "X-Ray tracing enables end-to-end debugging and analysis of all function activity. This will allow for identifying bottlenecks, slow downs and timeouts.\n",
+            "ID": "AWS-0066",
+            "Message": "Function does not have tracing enabled.",
+            "Namespace": "builtin.aws.lambda.aws0066",
+            "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0066",
+            "Query": "data.builtin.aws.lambda.aws0066.deny",
+            "References": [
+              "https://docs.aws.amazon.com/lambda/latest/dg/services-xray.html",
+              "https://avd.aquasec.com/misconfig/aws-0066"
+            ],
+            "Resolution": "Enable tracing",
+            "Severity": "LOW",
+            "Status": "FAIL",
+            "Title": "Lambda functions should have X-Ray tracing enabled",
+            "Type": "Terraform Security Check"
+          }
+        ],
+        "Target": "infra/aws/modules/database-audit-projection/main.tf",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 51
+        },
+        "Target": "infra/aws/modules/foundation-identities/profile-tests/composed",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 1,
+          "Successes": 0
+        },
+        "Misconfigurations": [
+          {
+            "CauseMetadata": {
+              "Code": {
+                "Lines": [
+                  {
+                    "Annotation": "",
+                    "Content": "resource \"aws_lambda_function\" \"origin\" {",
+                    "FirstCause": true,
+                    "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_lambda_function\"\u001b[0m \u001b[38;5;37m\"origin\"\u001b[0m {",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 71,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  tags             = local.cost_allocation_tags",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mtags\u001b[0m             = local.cost_allocation_tags",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 72,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  function_name    = local.name",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mfunction_name\u001b[0m    = local.name",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 73,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  role             = aws_iam_role.origin.arn",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mrole\u001b[0m             = aws_iam_role.origin.arn",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 74,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  runtime          = \"nodejs22.x\"",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mruntime\u001b[0m          = \u001b[38;5;37m\"nodejs22.x\"",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 75,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  handler          = \"index.handler\"",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[0m  \u001b[38;5;245mhandler\u001b[0m          = \u001b[38;5;33m\"index\u001b[0m.handler\u001b[38;5;37m\"",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 76,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  architectures    = [\"x86_64\"]",
+                    "FirstCause": false,
+                    "Highlighted": "  architectures    = [\"\u001b[0mx86_64\u001b[38;5;37m\"]",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 77,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  filename         = var.function_zip_path",
+                    "FirstCause": false,
+                    "Highlighted": "  filename         = var.function_zip_path",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 78,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  source_code_hash = var.function_zip_sha256_base64",
+                    "FirstCause": false,
+                    "Highlighted": "  source_code_hash = var.function_zip_sha256_base64",
+                    "IsCause": true,
+                    "LastCause": true,
+                    "Number": 79,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "",
+                    "FirstCause": false,
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 80,
+                    "Truncated": true
+                  }
+                ]
+              },
+              "EndLine": 91,
+              "Occurrences": [
+                {
+                  "Filename": "infra/aws/origin-authentication/main.tf",
+                  "Location": {
+                    "EndLine": 52,
+                    "StartLine": 37
+                  },
+                  "Resource": "module.origin_authentication"
+                }
+              ],
+              "Provider": "AWS",
+              "Resource": "module.origin_authentication",
+              "Service": "lambda",
+              "StartLine": 71
+            },
+            "Description": "X-Ray tracing enables end-to-end debugging and analysis of all function activity. This will allow for identifying bottlenecks, slow downs and timeouts.\n",
+            "ID": "AWS-0066",
+            "Message": "Function does not have tracing enabled.",
+            "Namespace": "builtin.aws.lambda.aws0066",
+            "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0066",
+            "Query": "data.builtin.aws.lambda.aws0066.deny",
+            "References": [
+              "https://docs.aws.amazon.com/lambda/latest/dg/services-xray.html",
+              "https://avd.aquasec.com/misconfig/aws-0066"
+            ],
+            "Resolution": "Enable tracing",
+            "Severity": "LOW",
+            "Status": "FAIL",
+            "Title": "Lambda functions should have X-Ray tracing enabled",
+            "Type": "Terraform Security Check"
+          }
+        ],
+        "Target": "infra/aws/modules/origin-authentication/main.tf",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 1,
+          "Successes": 0
+        },
+        "Misconfigurations": [
+          {
+            "CauseMetadata": {
+              "Code": {
+                "Lines": [
+                  {
+                    "Annotation": "",
+                    "Content": "resource \"aws_cloudfront_distribution\" \"application\" {",
+                    "FirstCause": true,
+                    "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_cloudfront_distribution\"\u001b[0m \u001b[38;5;37m\"application\"\u001b[0m {",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 70,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  provider            = aws.edge",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[38;5;33m  provider\u001b[0m            \u001b[38;5;245m=\u001b[0m aws.edge",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 71,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  enabled             = var.enabled",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245menabled\u001b[0m             = \u001b[38;5;33mvar\u001b[0m.enabled",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 72,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  comment             = local.name",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mcomment\u001b[0m             = local.name",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 73,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  aliases             = [var.origin.hostname]",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245maliases\u001b[0m             = [\u001b[38;5;33mvar\u001b[0m.origin.hostname]",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 74,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  is_ipv6_enabled     = true",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mis_ipv6_enabled\u001b[0m     = \u001b[38;5;166mtrue",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 75,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  http_version        = \"http2and3\"",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[0m  \u001b[38;5;245mhttp_version\u001b[0m        = \u001b[38;5;37m\"http2and3\"",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 76,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  web_acl_id          = aws_wafv2_web_acl.edge.arn",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[0m  \u001b[38;5;245mweb_acl_id\u001b[0m          = aws_wafv2_web_acl.edge.arn",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 77,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  wait_for_deployment = true",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mwait_for_deployment\u001b[0m = \u001b[38;5;166mtrue",
+                    "IsCause": true,
+                    "LastCause": true,
+                    "Number": 78,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "",
+                    "FirstCause": false,
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 79,
+                    "Truncated": true
+                  }
+                ]
+              },
+              "EndLine": 132,
+              "Occurrences": [
+                {
+                  "Filename": "infra/aws/public-frontdoor/main.tf",
+                  "Location": {
+                    "EndLine": 136,
+                    "StartLine": 120
+                  },
+                  "Resource": "module.public_frontdoor"
+                }
+              ],
+              "Provider": "AWS",
+              "Resource": "module.public_frontdoor",
+              "Service": "cloudfront",
+              "StartLine": 70
+            },
+            "Description": "You should configure CloudFront Access Logging to create log files that contain detailed information about every user request that CloudFront receives\n",
+            "ID": "AWS-0010",
+            "Message": "Distribution does not have logging enabled",
+            "Namespace": "builtin.aws.cloudfront.aws0010",
+            "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0010",
+            "Query": "data.builtin.aws.cloudfront.aws0010.deny",
+            "References": [
+              "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/AccessLogs.html",
+              "https://avd.aquasec.com/misconfig/aws-0010"
+            ],
+            "Resolution": "Enable logging for CloudFront distributions",
+            "Severity": "MEDIUM",
+            "Status": "FAIL",
+            "Title": "Cloudfront distribution should have Access Logging configured",
+            "Type": "Terraform Security Check"
+          }
+        ],
+        "Target": "infra/aws/modules/public-frontdoor/main.tf",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 69
+        },
+        "Target": "infra/aws/modules/records/operator-tests/composed",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 51
+        },
+        "Target": "infra/aws/operator-bootstrap",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 71
+        },
+        "Target": "infra/aws/operator-database",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 71
+        },
+        "Target": "infra/aws/operator-database/hosted",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 51
+        },
+        "Target": "infra/aws/operator-database/hosted/runner-foundation-policy/tests/harness",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 1,
+          "Successes": 0
+        },
+        "Misconfigurations": [
+          {
+            "CauseMetadata": {
+              "Code": {
+                "Lines": [
+                  {
+                    "Annotation": "",
+                    "Content": "resource \"aws_cloudtrail\" \"database\" {",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_cloudtrail\"\u001b[0m \u001b[38;5;37m\"database\"\u001b[0m {",
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 165,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "",
+                    "FirstCause": false,
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 166,
+                    "Truncated": true
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  is_multi_region_trail         = false",
+                    "FirstCause": true,
+                    "Highlighted": "\u001b[0m  \u001b[38;5;245mis_multi_region_trail\u001b[0m         = \u001b[38;5;166mfalse",
+                    "IsCause": true,
+                    "LastCause": true,
+                    "Number": 172,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "",
+                    "FirstCause": false,
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 184,
+                    "Truncated": true
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "}",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[0m}",
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 185,
+                    "Truncated": false
+                  }
+                ]
+              },
+              "EndLine": 172,
+              "Occurrences": [
+                {
+                  "Filename": "infra/aws/operator-database/hosted/stores.tf",
+                  "Location": {
+                    "EndLine": 185,
+                    "StartLine": 165
+                  },
+                  "Resource": "aws_cloudtrail.database[0]"
+                }
+              ],
+              "Provider": "AWS",
+              "Resource": "aws_cloudtrail.database[0]",
+              "Service": "cloudtrail",
+              "StartLine": 172
+            },
+            "Description": "Activity could be happening in your account in a different region. When creating Cloudtrail in the AWS Management Console the trail is configured by default to be multi-region, this isn't the case with the Terraform resource. Cloudtrail should cover the full AWS account to ensure you can track changes in regions you are not actively operating in.\n",
+            "ID": "AWS-0014",
+            "Message": "Trail is not enabled across all regions.",
+            "Namespace": "builtin.aws.cloudtrail.aws0014",
+            "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0014",
+            "Query": "data.builtin.aws.cloudtrail.aws0014.deny",
+            "References": [
+              "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/receive-cloudtrail-log-files-from-multiple-regions.html",
+              "https://avd.aquasec.com/misconfig/aws-0014"
+            ],
+            "Resolution": "Enable Cloudtrail in all regions",
+            "Severity": "MEDIUM",
+            "Status": "FAIL",
+            "Title": "Cloudtrail should be enabled in all regions regardless of where your AWS resources are generally homed",
+            "Type": "Terraform Security Check"
+          }
+        ],
+        "Target": "infra/aws/operator-database/hosted/stores.tf",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 1,
+          "Successes": 0
+        },
+        "Misconfigurations": [
+          {
+            "CauseMetadata": {
+              "Code": {
+                "Lines": [
+                  {
+                    "Annotation": "",
+                    "Content": "resource \"aws_cloudtrail\" \"database\" {",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_cloudtrail\"\u001b[0m \u001b[38;5;37m\"database\"\u001b[0m {",
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 169,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "",
+                    "FirstCause": false,
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 170,
+                    "Truncated": true
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  is_multi_region_trail         = false",
+                    "FirstCause": true,
+                    "Highlighted": "\u001b[0m  \u001b[38;5;245mis_multi_region_trail\u001b[0m         = \u001b[38;5;166mfalse",
+                    "IsCause": true,
+                    "LastCause": true,
+                    "Number": 176,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "",
+                    "FirstCause": false,
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 198,
+                    "Truncated": true
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "}",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[0m}",
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 199,
+                    "Truncated": false
+                  }
+                ]
+              },
+              "EndLine": 176,
+              "Occurrences": [
+                {
+                  "Filename": "infra/aws/operator-database/stores.tf",
+                  "Location": {
+                    "EndLine": 199,
+                    "StartLine": 169
+                  },
+                  "Resource": "aws_cloudtrail.database[0]"
+                }
+              ],
+              "Provider": "AWS",
+              "Resource": "aws_cloudtrail.database[0]",
+              "Service": "cloudtrail",
+              "StartLine": 176
+            },
+            "Description": "Activity could be happening in your account in a different region. When creating Cloudtrail in the AWS Management Console the trail is configured by default to be multi-region, this isn't the case with the Terraform resource. Cloudtrail should cover the full AWS account to ensure you can track changes in regions you are not actively operating in.\n",
+            "ID": "AWS-0014",
+            "Message": "Trail is not enabled across all regions.",
+            "Namespace": "builtin.aws.cloudtrail.aws0014",
+            "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0014",
+            "Query": "data.builtin.aws.cloudtrail.aws0014.deny",
+            "References": [
+              "https://docs.aws.amazon.com/awscloudtrail/latest/userguide/receive-cloudtrail-log-files-from-multiple-regions.html",
+              "https://avd.aquasec.com/misconfig/aws-0014"
+            ],
+            "Resolution": "Enable Cloudtrail in all regions",
+            "Severity": "MEDIUM",
+            "Status": "FAIL",
+            "Title": "Cloudtrail should be enabled in all regions regardless of where your AWS resources are generally homed",
+            "Type": "Terraform Security Check"
+          }
+        ],
+        "Target": "infra/aws/operator-database/stores.tf",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 64
+        },
+        "Target": "infra/aws/operator-foundations",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 2,
+          "Successes": 0
+        },
+        "Misconfigurations": [
+          {
+            "CauseMetadata": {
+              "Code": {
+                "Lines": [
+                  {
+                    "Annotation": "",
+                    "Content": "resource \"aws_s3_bucket\" \"access_logs\" {",
+                    "FirstCause": true,
+                    "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_s3_bucket\"\u001b[0m \u001b[38;5;37m\"access_logs\"\u001b[0m {",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 61,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  bucket              = local.access_log_bucket",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mbucket\u001b[0m              = local.access_log_bucket",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 62,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  object_lock_enabled = false",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mobject_lock_enabled\u001b[0m = \u001b[38;5;166mfalse",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 63,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  force_destroy       = false",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[0m  \u001b[38;5;245mforce_destroy\u001b[0m       = \u001b[38;5;166mfalse",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 64,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  tags                = local.tags",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[0m  \u001b[38;5;245mtags\u001b[0m                = local.tags",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 65,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  lifecycle { prevent_destroy = true }",
+                    "FirstCause": false,
+                    "Highlighted": "  lifecycle { \u001b[38;5;245mprevent_destroy\u001b[0m = \u001b[38;5;166mtrue\u001b[0m }",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 66,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  depends_on = [terraform_data.guard]",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mdepends_on\u001b[0m = [terraform_data.guard]",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 67,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "}",
+                    "FirstCause": false,
+                    "Highlighted": "}",
+                    "IsCause": true,
+                    "LastCause": true,
+                    "Number": 68,
+                    "Truncated": false
+                  }
+                ]
+              },
+              "EndLine": 68,
+              "Provider": "AWS",
+              "Resource": "aws_s3_bucket.access_logs",
+              "Service": "s3",
+              "StartLine": 61
+            },
+            "Description": "Ensures S3 bucket logging is enabled for S3 buckets",
+            "ID": "AWS-0089",
+            "Message": "Bucket has logging disabled",
+            "Namespace": "builtin.aws.s3.aws0089",
+            "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0089",
+            "Query": "data.builtin.aws.s3.aws0089.deny",
+            "References": [
+              "https://docs.aws.amazon.com/AmazonS3/latest/userguide/ServerLogs.html",
+              "https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-server-access-logging.html",
+              "https://avd.aquasec.com/misconfig/aws-0089"
+            ],
+            "Resolution": "Add a logging block to the resource to enable access logging",
+            "Severity": "LOW",
+            "Status": "FAIL",
+            "Title": "S3 Bucket Logging",
+            "Type": "Terraform Security Check"
+          },
+          {
+            "CauseMetadata": {
+              "Code": {
+                "Lines": [
+                  {
+                    "Annotation": "",
+                    "Content": "resource \"aws_s3_bucket_server_side_encryption_configuration\" \"access_logs\" {",
+                    "FirstCause": true,
+                    "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_s3_bucket_server_side_encryption_configuration\"\u001b[0m \u001b[38;5;37m\"access_logs\"\u001b[0m {",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 90,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  bucket = aws_s3_bucket.access_logs.bucket",
+                    "FirstCause": false,
+                    "Highlighted": "  \u001b[38;5;245mbucket\u001b[0m = aws_s3_bucket.access_logs.bucket",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 91,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  rule {",
+                    "FirstCause": false,
+                    "Highlighted": "  rule {",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 92,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "    apply_server_side_encryption_by_default {",
+                    "FirstCause": false,
+                    "Highlighted": "    apply_server_side_encryption_by_default {",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 93,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "      sse_algorithm     = \"AES256\"",
+                    "FirstCause": false,
+                    "Highlighted": "      \u001b[38;5;245msse_algorithm\u001b[0m     = \u001b[38;5;37m\"AES256\"",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 94,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "      kms_master_key_id = \"\"",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[0m      \u001b[38;5;245mkms_master_key_id\u001b[0m = \u001b[38;5;37m\"\"",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 95,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "    }",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[0m    }",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 96,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "    bucket_key_enabled = false",
+                    "FirstCause": false,
+                    "Highlighted": "    \u001b[38;5;245mbucket_key_enabled\u001b[0m = \u001b[38;5;166mfalse",
+                    "IsCause": true,
+                    "LastCause": false,
+                    "Number": 97,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  }",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[0m  }",
+                    "IsCause": true,
+                    "LastCause": true,
+                    "Number": 98,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "",
+                    "FirstCause": false,
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 99,
+                    "Truncated": true
+                  }
+                ]
+              },
+              "EndLine": 101,
+              "Provider": "AWS",
+              "Resource": "aws_s3_bucket_server_side_encryption_configuration.access_logs",
+              "Service": "s3",
+              "StartLine": 90
+            },
+            "Description": "Encryption using AWS keys provides protection for your S3 buckets. To gain greater control over encryption, such as key rotation, access policies, and auditability, use customer managed keys (CMKs) with SSE-KMS.\nNote that SSE-KMS is not supported for S3 server access logging destination buckets; in such cases, use SSE-S3 instead.\n",
+            "ID": "AWS-0132",
+            "Message": "Bucket does not encrypt data with a customer managed key.",
+            "Namespace": "builtin.aws.s3.aws0132",
+            "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0132",
+            "Query": "data.builtin.aws.s3.aws0132.deny",
+            "References": [
+              "https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucket-encryption.html",
+              "https://avd.aquasec.com/misconfig/aws-0132"
+            ],
+            "Resolution": "Use SSE-KMS with a customer managed key (CMK)",
+            "Severity": "HIGH",
+            "Status": "FAIL",
+            "Title": "S3 encryption should use Customer Managed Keys",
+            "Type": "Terraform Security Check"
+          }
+        ],
+        "Target": "infra/aws/operator-foundations/access-logging.tf",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 73
+        },
+        "Target": "infra/aws/operator-network",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 52
+        },
+        "Target": "infra/aws/origin-authentication",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 52
+        },
+        "Target": "infra/aws/origin-bootstrap",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 1,
+          "Successes": 0
+        },
+        "Misconfigurations": [
+          {
+            "CauseMetadata": {
+              "Code": {
+                "Lines": [
+                  {
+                    "Annotation": "",
+                    "Content": "resource \"aws_kms_key\" \"credential\" {",
+                    "FirstCause": false,
+                    "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_kms_key\"\u001b[0m \u001b[38;5;37m\"credential\"\u001b[0m {",
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 146,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "",
+                    "FirstCause": false,
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 147,
+                    "Truncated": true
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "  enable_key_rotation                = false",
+                    "FirstCause": true,
+                    "Highlighted": "\u001b[0m  \u001b[38;5;245menable_key_rotation\u001b[0m                = \u001b[38;5;166mfalse",
+                    "IsCause": true,
+                    "LastCause": true,
+                    "Number": 153,
+                    "Truncated": false
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "",
+                    "FirstCause": false,
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 190,
+                    "Truncated": true
+                  },
+                  {
+                    "Annotation": "",
+                    "Content": "}",
+                    "FirstCause": false,
+                    "Highlighted": "}",
+                    "IsCause": false,
+                    "LastCause": false,
+                    "Number": 191,
+                    "Truncated": false
+                  }
+                ]
+              },
+              "EndLine": 153,
+              "Occurrences": [
+                {
+                  "Filename": "infra/aws/origin-bootstrap/main.tf",
+                  "Location": {
+                    "EndLine": 191,
+                    "StartLine": 146
+                  },
+                  "Resource": "aws_kms_key.credential"
+                }
+              ],
+              "Provider": "AWS",
+              "Resource": "aws_kms_key.credential",
+              "Service": "kms",
+              "StartLine": 153
+            },
+            "Description": "You should configure your KMS keys to auto rotate to maintain security and defend against compromise.\n",
+            "ID": "AWS-0065",
+            "Message": "Key does not have rotation enabled.",
+            "Namespace": "builtin.aws.kms.aws0065",
+            "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0065",
+            "Query": "data.builtin.aws.kms.aws0065.deny",
+            "References": [
+              "https://docs.aws.amazon.com/kms/latest/developerguide/rotate-keys.html",
+              "https://avd.aquasec.com/misconfig/aws-0065"
+            ],
+            "Resolution": "Configure KMS key to auto rotate",
+            "Severity": "MEDIUM",
+            "Status": "FAIL",
+            "Title": "A KMS key is not configured to auto-rotate.",
+            "Type": "Terraform Security Check"
+          }
+        ],
+        "Target": "infra/aws/origin-bootstrap/main.tf",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 76
+        },
+        "Target": "infra/aws/platform",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 51
+        },
+        "Target": "infra/aws/production-dns-zone",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 54
+        },
+        "Target": "infra/aws/public-frontdoor",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 53
+        },
+        "Target": "infra/aws/public-log-custody",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 51
+        },
+        "Target": "infra/aws/public-provisioning",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 24
+        },
+        "Target": "infra/aws/public-provisioning/tests/dev.json",
+        "Type": "cloudformation"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 24
+        },
+        "Target": "infra/aws/public-provisioning/tests/production.json",
+        "Type": "cloudformation"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 68
+        },
+        "Target": "infra/aws/records",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 61
+        },
+        "Target": "infra/aws/retained-assets",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 61
+        },
+        "Target": "infra/aws/retained-assets/managed",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 65
+        },
+        "Target": "infra/aws/retained-assets/operator",
+        "Type": "terraform"
+      },
+      {
+        "Class": "config",
+        "MisconfSummary": {
+          "Failures": 0,
+          "Successes": 62
+        },
+        "Target": "infra/aws/seed",
+        "Type": "terraform"
+      }
+    ],
+    "SchemaVersion": 2,
+    "Trivy": {
+      "Version": "0.70.0"
+    }
+  },
+  "projected_sarif": {
+    "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/sarif-2.1/schema/sarif-schema-2.1.0.json",
+    "runs": [
+      {
+        "columnKind": "utf16CodeUnits",
+        "originalUriBaseIds": {
+          "ROOTPATH": {
+            "uri": "file:///Users/mac/claude-work/apps/cybercoach/evidence/root-trivy-156dd-source-refresh-r1/SYNTHETIC-FILESYSTEM-FOR-CONVERTER.json/"
+          }
+        },
+        "results": [
+          {
+            "level": "note",
+            "locations": [
+              {
+                "message": {
+                  "text": "infra/aws/modules/audit-foundation/receivers.tf"
+                },
+                "physicalLocation": {
+                  "artifactLocation": {
+                    "uri": "infra/aws/modules/audit-foundation/receivers.tf",
+                    "uriBaseId": "ROOTPATH"
+                  },
+                  "region": {
+                    "endColumn": 1,
+                    "endLine": 81,
+                    "startColumn": 1,
+                    "startLine": 67
+                  }
+                }
+              }
+            ],
+            "message": {
+              "text": "Artifact: infra/aws/modules/audit-foundation/receivers.tf\nType: terraform\nVulnerability AWS-0089\nSeverity: LOW\nMessage: Bucket has logging disabled\nLink: [AWS-0089](https://avd.aquasec.com/misconfig/aws-0089)"
+            },
+            "ruleId": "AWS-0089",
+            "ruleIndex": 0
+          },
+          {
+            "level": "error",
+            "locations": [
+              {
+                "message": {
+                  "text": "infra/aws/modules/audit-foundation/receivers.tf"
+                },
+                "physicalLocation": {
+                  "artifactLocation": {
+                    "uri": "infra/aws/modules/audit-foundation/receivers.tf",
+                    "uriBaseId": "ROOTPATH"
+                  },
+                  "region": {
+                    "endColumn": 1,
+                    "endLine": 110,
+                    "startColumn": 1,
+                    "startLine": 103
+                  }
+                }
+              }
+            ],
+            "message": {
+              "text": "Artifact: infra/aws/modules/audit-foundation/receivers.tf\nType: terraform\nVulnerability AWS-0132\nSeverity: HIGH\nMessage: Bucket does not encrypt data with a customer managed key.\nLink: [AWS-0132](https://avd.aquasec.com/misconfig/aws-0132)"
+            },
+            "ruleId": "AWS-0132",
+            "ruleIndex": 1
+          },
+          {
+            "level": "note",
+            "locations": [
+              {
+                "message": {
+                  "text": "infra/aws/modules/database-audit-projection/main.tf"
+                },
+                "physicalLocation": {
+                  "artifactLocation": {
+                    "uri": "infra/aws/modules/database-audit-projection/main.tf",
+                    "uriBaseId": "ROOTPATH"
+                  },
+                  "region": {
+                    "endColumn": 1,
+                    "endLine": 135,
+                    "startColumn": 1,
+                    "startLine": 117
+                  }
+                }
+              }
+            ],
+            "message": {
+              "text": "Artifact: infra/aws/modules/database-audit-projection/main.tf\nType: terraform\nVulnerability AWS-0066\nSeverity: LOW\nMessage: Function does not have tracing enabled.\nLink: [AWS-0066](https://avd.aquasec.com/misconfig/aws-0066)"
+            },
+            "ruleId": "AWS-0066",
+            "ruleIndex": 2
+          },
+          {
+            "level": "note",
+            "locations": [
+              {
+                "message": {
+                  "text": "infra/aws/modules/origin-authentication/main.tf"
+                },
+                "physicalLocation": {
+                  "artifactLocation": {
+                    "uri": "infra/aws/modules/origin-authentication/main.tf",
+                    "uriBaseId": "ROOTPATH"
+                  },
+                  "region": {
+                    "endColumn": 1,
+                    "endLine": 91,
+                    "startColumn": 1,
+                    "startLine": 71
+                  }
+                }
+              }
+            ],
+            "message": {
+              "text": "Artifact: infra/aws/modules/origin-authentication/main.tf\nType: terraform\nVulnerability AWS-0066\nSeverity: LOW\nMessage: Function does not have tracing enabled.\nLink: [AWS-0066](https://avd.aquasec.com/misconfig/aws-0066)"
+            },
+            "ruleId": "AWS-0066",
+            "ruleIndex": 2
+          },
+          {
+            "level": "warning",
+            "locations": [
+              {
+                "message": {
+                  "text": "infra/aws/modules/public-frontdoor/main.tf"
+                },
+                "physicalLocation": {
+                  "artifactLocation": {
+                    "uri": "infra/aws/modules/public-frontdoor/main.tf",
+                    "uriBaseId": "ROOTPATH"
+                  },
+                  "region": {
+                    "endColumn": 1,
+                    "endLine": 132,
+                    "startColumn": 1,
+                    "startLine": 70
+                  }
+                }
+              }
+            ],
+            "message": {
+              "text": "Artifact: infra/aws/modules/public-frontdoor/main.tf\nType: terraform\nVulnerability AWS-0010\nSeverity: MEDIUM\nMessage: Distribution does not have logging enabled\nLink: [AWS-0010](https://avd.aquasec.com/misconfig/aws-0010)"
+            },
+            "ruleId": "AWS-0010",
+            "ruleIndex": 3
+          },
+          {
+            "level": "warning",
+            "locations": [
+              {
+                "message": {
+                  "text": "infra/aws/operator-database/hosted/stores.tf"
+                },
+                "physicalLocation": {
+                  "artifactLocation": {
+                    "uri": "infra/aws/operator-database/hosted/stores.tf",
+                    "uriBaseId": "ROOTPATH"
+                  },
+                  "region": {
+                    "endColumn": 1,
+                    "endLine": 172,
+                    "startColumn": 1,
+                    "startLine": 172
+                  }
+                }
+              }
+            ],
+            "message": {
+              "text": "Artifact: infra/aws/operator-database/hosted/stores.tf\nType: terraform\nVulnerability AWS-0014\nSeverity: MEDIUM\nMessage: Trail is not enabled across all regions.\nLink: [AWS-0014](https://avd.aquasec.com/misconfig/aws-0014)"
+            },
+            "ruleId": "AWS-0014",
+            "ruleIndex": 4
+          },
+          {
+            "level": "warning",
+            "locations": [
+              {
+                "message": {
+                  "text": "infra/aws/operator-database/stores.tf"
+                },
+                "physicalLocation": {
+                  "artifactLocation": {
+                    "uri": "infra/aws/operator-database/stores.tf",
+                    "uriBaseId": "ROOTPATH"
+                  },
+                  "region": {
+                    "endColumn": 1,
+                    "endLine": 176,
+                    "startColumn": 1,
+                    "startLine": 176
+                  }
+                }
+              }
+            ],
+            "message": {
+              "text": "Artifact: infra/aws/operator-database/stores.tf\nType: terraform\nVulnerability AWS-0014\nSeverity: MEDIUM\nMessage: Trail is not enabled across all regions.\nLink: [AWS-0014](https://avd.aquasec.com/misconfig/aws-0014)"
+            },
+            "ruleId": "AWS-0014",
+            "ruleIndex": 4
+          },
+          {
+            "level": "note",
+            "locations": [
+              {
+                "message": {
+                  "text": "infra/aws/operator-foundations/access-logging.tf"
+                },
+                "physicalLocation": {
+                  "artifactLocation": {
+                    "uri": "infra/aws/operator-foundations/access-logging.tf",
+                    "uriBaseId": "ROOTPATH"
+                  },
+                  "region": {
+                    "endColumn": 1,
+                    "endLine": 68,
+                    "startColumn": 1,
+                    "startLine": 61
+                  }
+                }
+              }
+            ],
+            "message": {
+              "text": "Artifact: infra/aws/operator-foundations/access-logging.tf\nType: terraform\nVulnerability AWS-0089\nSeverity: LOW\nMessage: Bucket has logging disabled\nLink: [AWS-0089](https://avd.aquasec.com/misconfig/aws-0089)"
+            },
+            "ruleId": "AWS-0089",
+            "ruleIndex": 0
+          },
+          {
+            "level": "error",
+            "locations": [
+              {
+                "message": {
+                  "text": "infra/aws/operator-foundations/access-logging.tf"
+                },
+                "physicalLocation": {
+                  "artifactLocation": {
+                    "uri": "infra/aws/operator-foundations/access-logging.tf",
+                    "uriBaseId": "ROOTPATH"
+                  },
+                  "region": {
+                    "endColumn": 1,
+                    "endLine": 101,
+                    "startColumn": 1,
+                    "startLine": 90
+                  }
+                }
+              }
+            ],
+            "message": {
+              "text": "Artifact: infra/aws/operator-foundations/access-logging.tf\nType: terraform\nVulnerability AWS-0132\nSeverity: HIGH\nMessage: Bucket does not encrypt data with a customer managed key.\nLink: [AWS-0132](https://avd.aquasec.com/misconfig/aws-0132)"
+            },
+            "ruleId": "AWS-0132",
+            "ruleIndex": 1
+          },
+          {
+            "level": "warning",
+            "locations": [
+              {
+                "message": {
+                  "text": "infra/aws/origin-bootstrap/main.tf"
+                },
+                "physicalLocation": {
+                  "artifactLocation": {
+                    "uri": "infra/aws/origin-bootstrap/main.tf",
+                    "uriBaseId": "ROOTPATH"
+                  },
+                  "region": {
+                    "endColumn": 1,
+                    "endLine": 153,
+                    "startColumn": 1,
+                    "startLine": 153
+                  }
+                }
+              }
+            ],
+            "message": {
+              "text": "Artifact: infra/aws/origin-bootstrap/main.tf\nType: terraform\nVulnerability AWS-0065\nSeverity: MEDIUM\nMessage: Key does not have rotation enabled.\nLink: [AWS-0065](https://avd.aquasec.com/misconfig/aws-0065)"
+            },
+            "ruleId": "AWS-0065",
+            "ruleIndex": 5
+          }
+        ],
+        "tool": {
+          "driver": {
+            "fullName": "Trivy Vulnerability Scanner",
+            "informationUri": "https://github.com/aquasecurity/trivy",
+            "name": "Trivy",
+            "rules": [
+              {
+                "defaultConfiguration": {
+                  "level": "note"
+                },
+                "fullDescription": {
+                  "text": "Ensures S3 bucket logging is enabled for S3 buckets"
+                },
+                "help": {
+                  "markdown": "**Misconfiguration AWS-0089**\n| Type | Severity | Check | Message | Link |\n| --- | --- | --- | --- | --- |\n|Terraform Security Check|LOW|S3 Bucket Logging|Bucket has logging disabled|[AWS-0089](https://avd.aquasec.com/misconfig/aws-0089)|\n\nEnsures S3 bucket logging is enabled for S3 buckets",
+                  "text": "Misconfiguration AWS-0089\nType: Terraform Security Check\nSeverity: LOW\nCheck: S3 Bucket Logging\nMessage: Bucket has logging disabled\nLink: [AWS-0089](https://avd.aquasec.com/misconfig/aws-0089)\nEnsures S3 bucket logging is enabled for S3 buckets"
+                },
+                "helpUri": "https://avd.aquasec.com/misconfig/aws-0089",
+                "id": "AWS-0089",
+                "name": "Misconfiguration",
+                "properties": {
+                  "precision": "very-high",
+                  "security-severity": "2.0",
+                  "tags": [
+                    "misconfiguration",
+                    "security",
+                    "LOW"
+                  ]
+                },
+                "shortDescription": {
+                  "text": "S3 Bucket Logging"
+                }
+              },
+              {
+                "defaultConfiguration": {
+                  "level": "error"
+                },
+                "fullDescription": {
+                  "text": "Encryption using AWS keys provides protection for your S3 buckets. To gain greater control over encryption, such as key rotation, access policies, and auditability, use customer managed keys (CMKs) with SSE-KMS.\nNote that SSE-KMS is not supported for S3 server access logging destination buckets; in such cases, use SSE-S3 instead.\n"
+                },
+                "help": {
+                  "markdown": "**Misconfiguration AWS-0132**\n| Type | Severity | Check | Message | Link |\n| --- | --- | --- | --- | --- |\n|Terraform Security Check|HIGH|S3 encryption should use Customer Managed Keys|Bucket does not encrypt data with a customer managed key.|[AWS-0132](https://avd.aquasec.com/misconfig/aws-0132)|\n\nEncryption using AWS keys provides protection for your S3 buckets. To gain greater control over encryption, such as key rotation, access policies, and auditability, use customer managed keys (CMKs) with SSE-KMS.\nNote that SSE-KMS is not supported for S3 server access logging destination buckets; in such cases, use SSE-S3 instead.\n",
+                  "text": "Misconfiguration AWS-0132\nType: Terraform Security Check\nSeverity: HIGH\nCheck: S3 encryption should use Customer Managed Keys\nMessage: Bucket does not encrypt data with a customer managed key.\nLink: [AWS-0132](https://avd.aquasec.com/misconfig/aws-0132)\nEncryption using AWS keys provides protection for your S3 buckets. To gain greater control over encryption, such as key rotation, access policies, and auditability, use customer managed keys (CMKs) with SSE-KMS.\nNote that SSE-KMS is not supported for S3 server access logging destination buckets; in such cases, use SSE-S3 instead.\n"
+                },
+                "helpUri": "https://avd.aquasec.com/misconfig/aws-0132",
+                "id": "AWS-0132",
+                "name": "Misconfiguration",
+                "properties": {
+                  "precision": "very-high",
+                  "security-severity": "8.0",
+                  "tags": [
+                    "misconfiguration",
+                    "security",
+                    "HIGH"
+                  ]
+                },
+                "shortDescription": {
+                  "text": "S3 encryption should use Customer Managed Keys"
+                }
+              },
+              {
+                "defaultConfiguration": {
+                  "level": "note"
+                },
+                "fullDescription": {
+                  "text": "X-Ray tracing enables end-to-end debugging and analysis of all function activity. This will allow for identifying bottlenecks, slow downs and timeouts.\n"
+                },
+                "help": {
+                  "markdown": "**Misconfiguration AWS-0066**\n| Type | Severity | Check | Message | Link |\n| --- | --- | --- | --- | --- |\n|Terraform Security Check|LOW|Lambda functions should have X-Ray tracing enabled|Function does not have tracing enabled.|[AWS-0066](https://avd.aquasec.com/misconfig/aws-0066)|\n\nX-Ray tracing enables end-to-end debugging and analysis of all function activity. This will allow for identifying bottlenecks, slow downs and timeouts.\n",
+                  "text": "Misconfiguration AWS-0066\nType: Terraform Security Check\nSeverity: LOW\nCheck: Lambda functions should have X-Ray tracing enabled\nMessage: Function does not have tracing enabled.\nLink: [AWS-0066](https://avd.aquasec.com/misconfig/aws-0066)\nX-Ray tracing enables end-to-end debugging and analysis of all function activity. This will allow for identifying bottlenecks, slow downs and timeouts.\n"
+                },
+                "helpUri": "https://avd.aquasec.com/misconfig/aws-0066",
+                "id": "AWS-0066",
+                "name": "Misconfiguration",
+                "properties": {
+                  "precision": "very-high",
+                  "security-severity": "2.0",
+                  "tags": [
+                    "misconfiguration",
+                    "security",
+                    "LOW"
+                  ]
+                },
+                "shortDescription": {
+                  "text": "Lambda functions should have X-Ray tracing enabled"
+                }
+              },
+              {
+                "defaultConfiguration": {
+                  "level": "warning"
+                },
+                "fullDescription": {
+                  "text": "You should configure CloudFront Access Logging to create log files that contain detailed information about every user request that CloudFront receives\n"
+                },
+                "help": {
+                  "markdown": "**Misconfiguration AWS-0010**\n| Type | Severity | Check | Message | Link |\n| --- | --- | --- | --- | --- |\n|Terraform Security Check|MEDIUM|Cloudfront distribution should have Access Logging configured|Distribution does not have logging enabled|[AWS-0010](https://avd.aquasec.com/misconfig/aws-0010)|\n\nYou should configure CloudFront Access Logging to create log files that contain detailed information about every user request that CloudFront receives\n",
+                  "text": "Misconfiguration AWS-0010\nType: Terraform Security Check\nSeverity: MEDIUM\nCheck: Cloudfront distribution should have Access Logging configured\nMessage: Distribution does not have logging enabled\nLink: [AWS-0010](https://avd.aquasec.com/misconfig/aws-0010)\nYou should configure CloudFront Access Logging to create log files that contain detailed information about every user request that CloudFront receives\n"
+                },
+                "helpUri": "https://avd.aquasec.com/misconfig/aws-0010",
+                "id": "AWS-0010",
+                "name": "Misconfiguration",
+                "properties": {
+                  "precision": "very-high",
+                  "security-severity": "5.5",
+                  "tags": [
+                    "misconfiguration",
+                    "security",
+                    "MEDIUM"
+                  ]
+                },
+                "shortDescription": {
+                  "text": "Cloudfront distribution should have Access Logging configured"
+                }
+              },
+              {
+                "defaultConfiguration": {
+                  "level": "warning"
+                },
+                "fullDescription": {
+                  "text": "Activity could be happening in your account in a different region. When creating Cloudtrail in the AWS Management Console the trail is configured by default to be multi-region, this isn't the case with the Terraform resource. Cloudtrail should cover the full AWS account to ensure you can track changes in regions you are not actively operating in.\n"
+                },
+                "help": {
+                  "markdown": "**Misconfiguration AWS-0014**\n| Type | Severity | Check | Message | Link |\n| --- | --- | --- | --- | --- |\n|Terraform Security Check|MEDIUM|Cloudtrail should be enabled in all regions regardless of where your AWS resources are generally homed|Trail is not enabled across all regions.|[AWS-0014](https://avd.aquasec.com/misconfig/aws-0014)|\n\nActivity could be happening in your account in a different region. When creating Cloudtrail in the AWS Management Console the trail is configured by default to be multi-region, this isn't the case with the Terraform resource. Cloudtrail should cover the full AWS account to ensure you can track changes in regions you are not actively operating in.\n",
+                  "text": "Misconfiguration AWS-0014\nType: Terraform Security Check\nSeverity: MEDIUM\nCheck: Cloudtrail should be enabled in all regions regardless of where your AWS resources are generally homed\nMessage: Trail is not enabled across all regions.\nLink: [AWS-0014](https://avd.aquasec.com/misconfig/aws-0014)\nActivity could be happening in your account in a different region. When creating Cloudtrail in the AWS Management Console the trail is configured by default to be multi-region, this isn't the case with the Terraform resource. Cloudtrail should cover the full AWS account to ensure you can track changes in regions you are not actively operating in.\n"
+                },
+                "helpUri": "https://avd.aquasec.com/misconfig/aws-0014",
+                "id": "AWS-0014",
+                "name": "Misconfiguration",
+                "properties": {
+                  "precision": "very-high",
+                  "security-severity": "5.5",
+                  "tags": [
+                    "misconfiguration",
+                    "security",
+                    "MEDIUM"
+                  ]
+                },
+                "shortDescription": {
+                  "text": "Cloudtrail should be enabled in all regions regardless of where your AWS resources are generally homed"
+                }
+              },
+              {
+                "defaultConfiguration": {
+                  "level": "warning"
+                },
+                "fullDescription": {
+                  "text": "You should configure your KMS keys to auto rotate to maintain security and defend against compromise.\n"
+                },
+                "help": {
+                  "markdown": "**Misconfiguration AWS-0065**\n| Type | Severity | Check | Message | Link |\n| --- | --- | --- | --- | --- |\n|Terraform Security Check|MEDIUM|A KMS key is not configured to auto-rotate.|Key does not have rotation enabled.|[AWS-0065](https://avd.aquasec.com/misconfig/aws-0065)|\n\nYou should configure your KMS keys to auto rotate to maintain security and defend against compromise.\n",
+                  "text": "Misconfiguration AWS-0065\nType: Terraform Security Check\nSeverity: MEDIUM\nCheck: A KMS key is not configured to auto-rotate.\nMessage: Key does not have rotation enabled.\nLink: [AWS-0065](https://avd.aquasec.com/misconfig/aws-0065)\nYou should configure your KMS keys to auto rotate to maintain security and defend against compromise.\n"
+                },
+                "helpUri": "https://avd.aquasec.com/misconfig/aws-0065",
+                "id": "AWS-0065",
+                "name": "Misconfiguration",
+                "properties": {
+                  "precision": "very-high",
+                  "security-severity": "5.5",
+                  "tags": [
+                    "misconfiguration",
+                    "security",
+                    "MEDIUM"
+                  ]
+                },
+                "shortDescription": {
+                  "text": "A KMS key is not configured to auto-rotate."
+                }
+              }
+            ],
+            "version": "0.70.0"
+          }
+        }
+      }
+    ],
+    "version": "2.1.0"
+  },
+  "row_mappings": [
+    {
+      "baseline": {
+        "end_line": 67,
+        "occurrences": [],
+        "provider": "AWS",
+        "resource": "aws_s3_bucket.access_logs",
+        "rule": "AWS-0089",
+        "service": "s3",
+        "severity": "LOW",
+        "start_line": 60,
+        "target": "operator-foundations/access-logging.tf"
+      },
+      "body_sha256": "e50bdd7dc1cafbbcf898beea117401769f4719910f231b78e0f8ee2f6e704ff8",
+      "projection": {
+        "end_line": 68,
+        "occurrences": [],
+        "provider": "AWS",
+        "resource": "aws_s3_bucket.access_logs",
+        "rule": "AWS-0089",
+        "service": "s3",
+        "severity": "LOW",
+        "start_line": 61,
+        "target": "operator-foundations/access-logging.tf"
+      }
+    },
+    {
+      "baseline": {
+        "end_line": 100,
+        "occurrences": [],
+        "provider": "AWS",
+        "resource": "aws_s3_bucket_server_side_encryption_configuration.access_logs",
+        "rule": "AWS-0132",
+        "service": "s3",
+        "severity": "HIGH",
+        "start_line": 89,
+        "target": "operator-foundations/access-logging.tf"
+      },
+      "body_sha256": "8b4df4e6886c82fa0fef71df897678b32a9a947d5ae0c7eafde381a7d0f26605",
+      "projection": {
+        "end_line": 101,
+        "occurrences": [],
+        "provider": "AWS",
+        "resource": "aws_s3_bucket_server_side_encryption_configuration.access_logs",
+        "rule": "AWS-0132",
+        "service": "s3",
+        "severity": "HIGH",
+        "start_line": 90,
+        "target": "operator-foundations/access-logging.tf"
+      }
+    }
+  ],
+  "scan_performed": false,
+  "schema": "cybercoach-pr197-inventory-projection-v1",
+  "source_head": "82fbb3fb334a9594fd304f79810dece51e694a9c",
+  "source_tree": "6dc7ca9d228c35cdef3a7788d89267a5db02f401"
+}
