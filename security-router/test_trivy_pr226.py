@@ -17,6 +17,9 @@ F = json.loads((H / 'fixtures/pr226-frontdoor-source.json').read_bytes())
 BASE_BYTES = (H / 'fixtures/pr197-source-association.json').read_bytes()
 BASE = json.loads(BASE_BYTES)['sources']
 CURRENT = {**BASE, **F['sources']}
+# This historical fixture retains its exact original source and caller bindings.
+c.SOURCES = {p: c.sha(body.encode()) for p, body in CURRENT.items()}
+next(row for row in c.EXPECTED if row['rule'] == 'AWS-0010')['occurrences'][0].update(start_line=120, end_line=136)
 
 
 class SourcePR226(unittest.TestCase):
