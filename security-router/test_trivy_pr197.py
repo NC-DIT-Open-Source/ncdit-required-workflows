@@ -84,6 +84,8 @@ P = json.loads((H / 'fixtures/pr197-inventory-projection.json').read_text())
 SOURCES = F['sources']
 # Preserve these historical PR197 controls at their original authenticated pins.
 c.SOURCES = {p: c.sha(body.encode()) for p, body in SOURCES.items()}
+# Preserve the historical PR197 caller coordinates as well as its source bodies.
+next(row for row in c.EXPECTED if row['rule'] == 'AWS-0010')['occurrences'][0].update(start_line=120, end_line=136)
 CHANGED = {'infra/aws/operator-foundations/access-logging.tf': '122dee0c94a8d757ff2263ec1279d614a6c6dce4bf636c787ceb80fefa470cc9'}
 
 def triple():
