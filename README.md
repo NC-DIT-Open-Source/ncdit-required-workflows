@@ -345,3 +345,12 @@ receiver exceptions, scanner commands and other repositories are unchanged.
 PR272 and earlier fixtures retain their original constants. The new public-source
 fixture and synthetic inventory controls prove source/guard compatibility only,
 not a new scanner result. A fresh complete hosted gate remains required.
+
+CyberCoach PR364 general-rate follow-up: two exact frontdoor fingerprints and
+the AWS-0010 caller end line (131 to 132) follow the explicit DEV-only general-rate
+flag. DEV retains its network restriction and rule sampling; PROD rate rules and
+ACL-level sampling remain unchanged. Finding identities, severities, HIGH receiver
+exceptions, scanner commands and all other repositories retain their behavior.
+The auth-only PR364 fixture remains immutable with its historical bindings.
+New public-source and synthetic projection controls establish compatibility only;
+no fresh scanner result or hosted clearance is claimed.
