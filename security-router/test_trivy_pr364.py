@@ -17,6 +17,9 @@ from test_trivy_pr272 import CURRENT as BASE
 from test_trivy_pr197 import triple as historical_triple, c as historical
 F = json.loads((H / 'fixtures/pr364-frontdoor-source.json').read_bytes())
 CURRENT = {**BASE, **F['sources']}
+# Historical auth-only PR364 keeps its exact source and coordinate bindings.
+c.SOURCES = {path: c.sha(body.encode()) for path, body in CURRENT.items()}
+next(row for row in c.EXPECTED if row['rule'] == 'AWS-0010')['occurrences'][0].update(start_line=112, end_line=131)
 
 
 def projection():
