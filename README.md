@@ -336,3 +336,12 @@ identities/severities and receiver exceptions are unchanged. PR197/PR226 fixture
 retain their original source/coordinate bindings. The current public-source fixture
 and explicitly synthetic inventory projection establish source/guard compatibility,
 not a new scanner result. A fresh complete hosted gate is still required.
+
+CyberCoach PR364 source association: two exact public-frontdoor fingerprints and
+the existing AWS-0010 caller end line (129 to 131) follow the reviewed DEV-only
+auth-rate rule removal and remaining-rule sampled requests. ACL-level sampling
+remains false; PROD defaults and the existing finding identities, severities,
+receiver exceptions, scanner commands and other repositories are unchanged.
+PR272 and earlier fixtures retain their original constants. The new public-source
+fixture and synthetic inventory controls prove source/guard compatibility only,
+not a new scanner result. A fresh complete hosted gate remains required.
