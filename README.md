@@ -8,31 +8,23 @@ Built and maintained by NC DIT's Office of AI & Policy (OAIP).
 
 ## What runs on a pull request
 
-`.github/workflows/pr-security-gate.yml` runs in two phases, and the order is deliberate:
+`.github/workflows/pr-security-gate.yml` runs one job, `precheck`:
 
-| Phase | What | Cost | Blocks on |
-|-------|------|------|-----------|
-| 1. `precheck` | **Trivy** — dependency CVEs, IaC/Dockerfile misconfiguration, secrets, licenses — plus an **errors-only** lint pass | ~2 min, deterministic, no tokens | CRITICAL/HIGH |
-| 2. `scan` | **Claude Security** — AI review of the filtered PR diff | 15–90 min, probabilistic | CRITICAL/HIGH into the default branch |
+| Job | What | Cost | Blocks on |
+|-----|------|------|-----------|
+| `precheck` | **Trivy** — dependency CVEs, IaC/Dockerfile misconfiguration, secrets, licenses — plus an **errors-only** lint pass | ~2 min, deterministic, no tokens | CRITICAL/HIGH |
 
-The AI scan explicitly uses **Claude Opus 5.5** (`claude-opus-5-5` for OAuth,
-`us.anthropic.claude-opus-5-5` for Bedrock). Security researchers and verifiers inherit
-that model; the plugin's Sonnet inventory helpers keep their existing model.
-
-Phase 2 carries `needs: precheck`, so anything a scanner can decide is decided first. A known
-CVE or a public storage bucket in the diff blocks in phase 1 and the expensive AI pass never
-starts.
-
-Blocking is safe in phase 1 in a way it is not in phase 2: Trivy and the linters cannot hang, so
-there is no timeout to trade against. Phase 2's timeout policy is a deliberate trade-off — see
-`CLAUDE_SECURITY_TIMEOUT_POLICY` below.
-
-**CodeQL** runs in parallel as each repo's own required check. Actions cannot express ordering
-across workflows, and CodeQL finishes in a minute or two, so it is not worth contorting for.
+**CodeQL** runs in parallel as each repo's own required check.
 
 The lint pass is intentionally lenient — syntax errors, undefined names, shell errors, workflow
 expression errors. No style rules. A linter that fails on formatting teaches people to ignore
-it, and this one gates the scan.
+it.
+
+The former Claude Security AI review (`scan`) and its findings comment (`report`) were removed
+on 2026-10-21. Both depended on the org secret `CLAUDE_CODE_OAUTH_TOKEN`, which Anthropic
+rejects (`401 authentication_failed`), so every human-authored pull request failed this required
+gate without being reviewed. The `CLAUDE_*` organization variables and secret are no longer
+read. Restoring an AI review is a separate decision.
 
 ## Why this repository is public
 
@@ -57,164 +49,20 @@ token-shaped strings are placeholders in a comment. Everything that must stay pr
 the internal `.github` repo — in particular the findings dashboard, which reports per-repo open
 finding counts.
 
-## Configuration
-
-Set once at the organization level, Settings → Secrets and variables → Actions.
-
-| Kind | Name | Value | Mode |
-|------|------|-------|------|
-| Variable | `CLAUDE_AUTH_MODE` | `bedrock` or `oauth` | both |
-| Secret | `AWS_ROLE_TO_ASSUME` | role ARN | bedrock |
-| Variable | `AWS_REGION` | e.g. `us-east-1` | bedrock |
-| Secret | `CLAUDE_CODE_OAUTH_TOKEN` | subscription token | oauth |
-
-Optional, all with working defaults:
-
-| Variable | Default | Effect |
-|----------|---------|--------|
-| `CLAUDE_SECURITY_TIMEOUT_POLICY` | `warn` | `warn`: a scan that trips its step timeout reports loudly and does not block. `block`: it fails closed. |
-| `CLAUDE_SECURITY_MAX_FILES` | `20` | Filtered-diff file cap; above it, effort drops rather than coverage. |
-| `CLAUDE_SECURITY_MAX_LINES` | `3000` | Same, on changed lines. |
-| `CLAUDE_SECURITY_MAX_FILE_LINES` | `2000` | A file above this is still scanned, but pulls effort down to `low`. |
-| `CLAUDE_SECURITY_DEBUG` | unset | `true` re-enables `show_full_output`. Off by default: it logs all tool results, which on a public repo means publicly. |
-| `CLAUDE_SECURITY_MAX_BUDGET_USD` | unset | Optional per-invocation model-spending cap for the scan. Configure together with the report cap. |
-| `CLAUDE_SECURITY_REPORT_MAX_BUDGET_USD` | unset | Optional per-invocation model-spending cap for the report-posting helper. Configure together with the scan cap. |
-
-Set spending caps as **repository variables** to bound a particular project's
-reviews without changing other repositories. Both must be positive USD amounts
-below 1000, with at most two decimal places (for example, `18.00` and `0.50`).
-Invalid or incomplete configuration fails before inference. Leaving both unset
-preserves existing behavior. The caps apply to each invocation; callers still
-need to budget repeated runs and any separate repository review workflows.
-
-A configured scan that does not complete successfully fails closed, including
-when a partial report exists or the failure occurs near the timeout window.
-Exhausting a spending cap does not establish a clean security review or reduce
-the scope being scanned. If the bounded report helper cannot post, the existing
-deterministic comment fallback still publishes the findings.
-
-## Scanner failures
-
-When the AI scan fails, the workflow logs and retains a small failure receipt
-named for the PR and run attempt for seven days. It records only fixed SDK
-failure categories and allowed HTTP status codes, which can distinguish
-authentication, billing, model availability, capacity, and execution limits.
-It never includes provider error text, prompts, source, credentials, identifiers,
-or the SDK transcript. Missing typed error fields remain unclassified; a
-receipt is diagnostic evidence, not a completed security review. Receipt failures
-cannot change the existing scan or fail-closed gate.
-
-When the action returns success but no JSONL report exists, a separate
-`claude-security-stages-<PR>-<attempt>` artifact retains `stages.json` for seven
-days. The same bounded, isolated parser records fixed stage counters and typed
-result/limit/refusal facts from SDK 0.3.280. It never copies text, paths, IDs,
-helper arguments, tool output, model descriptions, or transcripts.
-
-These are **observed events**, not a scan verdict: zero completed workflows means
-no matching terminal event was observed, not that a workflow definitely failed.
-A launch acknowledgement is never counted as completion. Helper completion means
-a successful synchronous tool return, not proof that a valid report was created.
-Missing tool metadata remains `null`, and `none_reported` means only that the last
-result did not report a typed execution limit. Nested calls, unrelated sessions,
-and calls before the preceding result are excluded. The action may omit trailing
-SDK events, so missing events cannot establish what happened. This diagnostic
-runs after the unchanged gate and cannot turn a missing report into a pass.
-
-The parser contract follows the published SDK [message types](https://code.claude.com/docs/en/agent-sdk/typescript)
-and its typed `WorkflowOutput`/`BashOutput`: only a correlated `task_notification`
-marks background completion. Input is limited to 4 MiB, 10,000 messages and
-10,000 root content blocks; the receipt is at most 2 KiB. Unknown or malformed
-input produces a bounded diagnostic rather than raw exception output.
-
-## How long should a run take?
-
-**A run over 30 minutes is normal. It is not hung. Do not cancel it.**
-
-This is the single most common misreading of this workflow — the Actions UI shows *elapsed*
-time and never *expected* time, so a healthy AI review looks identical to a stuck job.
-
-| Diff shape | Expect |
-|---|---|
-| ≤5 files **and** ≤300 changed lines | 5–10 min (the scanner's fast path) |
-| anything larger | 15–60 min, capped at 90 into the default branch, 30 elsewhere |
-| `precheck` alone | 30–60 s |
-
-The 300-line boundary is a **cliff**, not a slope — measured: 1 file / 4 lines took 6m07s, while
-1 file / 387 lines took 40m39s, because the second one falls outside the fast path and runs the
-full review. Runtime then scales with the number of top-level **areas** in scope rather than
-line count: 1 area ran 16–41 min, 4 areas ran 57 min.
-
-Every run tells you this itself, in three places, so you should not have to come here:
-
-- the **run title** ("allow up to 90 min (not hung)");
-- a **`::notice`** on the run page with the expected range for that specific diff;
-- a **banner at the top of the job summary**, written seconds in and on screen for the whole run.
-
-If a scan genuinely exceeds its budget the step is killed on its own and says
-`scan infrastructure timeout … this is NOT a security finding`, which is deliberately worded to
-be distinguishable from a real finding. With `CLAUDE_SECURITY_TIMEOUT_POLICY=warn` (the default)
-that does not block the merge.
-
-### Why the caps are 20 / 3000
-
-Measured, not guessed. At `medium` the plugin runs its full component matrix for anything
-outside its own fast path (≤5 files **and** ≤300 lines), and observed wall-clock tracks the
-number of top-level areas in scope far more than the line count:
-
-| PR | files | lines | areas in scope | scan |
-|---|---|---|---|---|
-| `Public-Comment-Analyzer` #193 | 1 | 404 | 1 | 16m20s |
-| `mock-carolina` #63 (1st) | 1 | 387 | 1 | 40m39s |
-| `mock-carolina` #63 (2nd) | 4 | 656 | 4 | **57m01s** |
-| `mock-carolina` #56 (pre-filter) | 126 | 31,576 | 12 | 1h26m, then a 2h kill |
-
-57 minutes on a **four-file** diff is 63% of the 90-minute step budget. A release-shaped diff
-spans roughly ten areas and would exceed it. The earlier 80 / 12,000 defaults did **not** trip
-on that shape — post-filter it is 65 files / 9,151 lines — so it would have run at `medium` and
-probably timed out, which is the failure this router exists to prevent.
-
-Raise these only with runtime evidence. Setting them too high does not fail loudly; it fails as
-a timeout, and with `CLAUDE_SECURITY_TIMEOUT_POLICY=warn` that is a pass.
-
-> A file/line cap is a proxy for what actually drives cost. The more predictive control would
-> be a cap on the **number of top-level areas** in scope; that is a router change, tracked
-> separately rather than guessed at here.
-
-## Skipped by design
-
-Each of these still satisfies the required check, so it cannot wedge a merge:
-
-- **Fork pull requests.** GitHub withholds Actions secrets from fork runs, so the scan cannot
-  authenticate. Flagged as needing human review. Never "fixed" with `pull_request_target` —
-  that runs with secrets while checking out untrusted code.
-- **Bot actors.** Bot-initiated runs get the Dependabot secret store, not Actions secrets.
-  Dependency updates are covered by Dependabot advisories, CodeQL and Trivy.
-- **Draft pull requests**, until marked ready for review.
-- **Diffs with nothing reviewable** — every changed file binary or data.
-
 ## `security-router/`
 
-Decides what phase 2 reads and how deep it goes. It is inlined into the workflow YAML because a
-required workflow cannot read a sibling file from its source repo; `embed.py` regenerates the
-embedded copy and CI fails on drift. See [`security-router/README.md`](security-router/README.md)
-for the invariants — most of them exist because they were broken once.
-
-```bash
-python3 security-router/test_route.py
-python3 security-router/test_embed.py
-bash    security-router/test_gate.sh .github/workflows/pr-security-gate.yml
-python3 security-router/embed.py --check
-```
+Holds the owner-maintained CyberCoach Trivy contract and the embedder that inlines it into the
+workflow YAML, because a required workflow cannot read a sibling file from its source repo.
+CI fails on drift. See [`security-router/README.md`](security-router/README.md).
 
 ## Changing anything here
 
 This file gates every pull request in the organization, so treat a change to it as a change to
 the gate:
 
-1. Edit `security-router/route_scan.py`, never an embedded block.
+1. Edit `security-router/trivy_contract.py`, never the embedded block.
 2. `python3 security-router/embed.py`
-3. Run all three suites, **including under bash 5** — macOS ships bash 3.2 and the runner does
-   not agree with it about `set -u`.
+3. Run the suites in `.github/workflows/security-router-tests.yml`.
 4. `actionlint .github/workflows/*.yml`
 5. Keep every `uses:` pinned to a 40-character commit SHA with a version comment. CI enforces it.
 
@@ -297,11 +145,11 @@ substitute. A fresh required-workflow run on the published CyberCoach event
 head, with complete retained evidence and no unaccepted HIGH/CRITICAL findings,
 is required before hosted closure.
 
-Run the existing router, gate, budget and embedder tests plus
+Run the embedder tests plus
 `python3 -B security-router/test_trivy_contract.py`,
 `python3 security-router/embed.py --check`, workflow parsing and actionlint.
 Do not edit generated Python in the workflow; the embedder protects both
-canonical sources against every quoted heredoc delimiter and both marker pairs.
+canonical source against every quoted heredoc delimiter and every reserved marker pair.
 
 Retained467 local evidence uses the authenticated Darwin/ARM64 Trivy0.70 binary
 for misconfiguration, secret and license scans plus its native SARIF converter.

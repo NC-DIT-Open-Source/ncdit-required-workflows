@@ -669,22 +669,16 @@ class Workflow(unittest.TestCase):
         for key,legacy,cybercoach in [('TRIVY','trivy','cybercoach_gate'),('TRIVY_SARIF','trivy_sarif','cybercoach_sarif')]:
             expected="DOLLAR{{ github.repository == '"+c.REPOSITORY+"' && steps."+cybercoach+".outcome || steps."+legacy+".outcome }}"
             self.assertEqual(summary['env'][key],expected.replace('DOLLAR',chr(36)))
-        self.assertEqual(hashlib.sha256(summary['run'].encode()).hexdigest(),DATA['summary_script_sha256'])
+        # The original summary also pointed at the removed AI review; only that sentence changed.
+        self.assertEqual(hashlib.sha256(summary['run'].encode()).hexdigest(),
+                         'f484aa6f6ce42c6bd849bf200910bfb1db84785a9279ac001820cc13d3f2f97a')
 
     def test_nonprecheck_jobs_match_reviewed_baseline(self):
-        # OAIP-627 updates only the scan model and both Claude action pins.
-        # Keep the original Trivy evidence fixture intact and pin the reviewed jobs.
-        digests = {**DATA['other_jobs'],
-                   'scan': '6feefe1791163973a8cfb08415429e15ac4f41ed85bfdae08a382afb02172b3d',
-                   'report': '070d2f550735d06be00d589a85ec9ede490caf31d21be2b1100a8c3f401ad5cd'}
-        for name,digest in digests.items():
-            job = copy.deepcopy(self.workflow['jobs'][name])
-            if name == 'scan':
-                # OAIP-634/OAIP-637 add diagnostics only; existing steps stay pinned.
-                job['steps'] = [s for s in job['steps'] if s.get('id') not in
-                                {'failure_receipt', 'failure_receipt_upload',
-                                 'stage_receipt', 'stage_receipt_upload'}]
-            self.assertEqual(c.sha(c.canonical(job).encode()),digest,name)
+        # The fixture's reviewed non-precheck jobs were the token-dependent Claude `scan` and
+        # `report`, both removed. Nothing may be added beside precheck without its own review.
+        self.assertEqual(set(DATA['other_jobs']), {'scan', 'report'})
+        self.assertEqual(set(self.workflow['jobs']), {'precheck'})
+
 
 
 # Retained original R26 artifact and derived-upload controls.

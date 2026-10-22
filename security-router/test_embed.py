@@ -98,10 +98,8 @@ check("blank lines carry no trailing whitespace", "" in out)
 # --- the sentinel is read from the target, not assumed ------------------------------------
 with open(WORKFLOW, encoding="utf-8") as fh:
     wf = fh.read()
-check("workflow uses the sentinel these tests assume", "<<'CS_ROUTER_PY'" in wf)
-
-_, updated = embed.splice(WORKFLOW, open(embed.SOURCE, encoding="utf-8").read())
-check("splicing the real workflow is idempotent", updated == wf)
+check("workflow uses the sentinel these tests assume", "<<'CC_TRIVY_PY'" in wf)
+check("the removed router block is not embedded", embed.BEGIN not in wf and embed.END not in wf)
 
 # The guard must not be redirectable. Scanning backwards for the nearest `<<'NAME'` meant one
 # innocuous comment above the marker naming a DIFFERENT block's delimiter retargeted the check,
