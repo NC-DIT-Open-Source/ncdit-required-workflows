@@ -202,3 +202,12 @@ exceptions, scanner commands and all other repositories retain their behavior.
 The auth-only PR364 fixture remains immutable with its historical bindings.
 New public-source and synthetic projection controls establish compatibility only;
 no fresh scanner result or hosted clearance is claimed.
+
+CyberCoach PR453 records-trail follow-up: the audit projection module drops its
+log subscription and Lambda invoke permission, so its reviewed source fingerprint
+changes and the LOW AWS-0066 projection finding moves from lines 117–135 to
+116–134. Finding identities, severities, HIGH receiver exceptions, scanner
+commands and all other repositories keep their behavior. Earlier fixtures keep
+their historical coordinates. The new public-source fixture and synthetic
+projection controls establish compatibility only; no fresh scanner result or
+hosted clearance is claimed.

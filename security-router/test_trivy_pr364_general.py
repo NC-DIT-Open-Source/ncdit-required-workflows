@@ -17,6 +17,9 @@ from test_trivy_pr364 import CURRENT as BASE
 from test_trivy_pr197 import triple as historical_triple, c as historical
 F = json.loads((H / 'fixtures/pr364-general-rate-source.json').read_bytes())
 CURRENT = {**BASE, **F['sources']}
+# Historical general-rate PR364 keeps its exact source and coordinate bindings.
+c.SOURCES = {path: c.sha(body.encode()) for path, body in CURRENT.items()}
+next(row for row in c.EXPECTED if row['rule'] == 'AWS-0066' and row['target'] == 'modules/database-audit-projection/main.tf').update(start_line=117, end_line=135)
 
 
 def projection():

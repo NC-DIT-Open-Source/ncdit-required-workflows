@@ -1004,6 +1004,7 @@ from test_trivy_pr226 import SourcePR226
 from test_trivy_pr272 import SourcePR272
 from test_trivy_pr364 import SourcePR364
 from test_trivy_pr364_general import SourcePR364General
+from test_trivy_pr453 import SourcePR453
 
 if __name__=='__main__':
     unittest.main(verbosity=2)
