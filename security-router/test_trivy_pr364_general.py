@@ -19,6 +19,8 @@ F = json.loads((H / 'fixtures/pr364-general-rate-source.json').read_bytes())
 CURRENT = {**BASE, **F['sources']}
 # Historical general-rate PR364 keeps its exact source bindings.
 c.SOURCES = {path: c.sha(body.encode()) for path, body in CURRENT.items()}
+# Historical sources keep their own AWS-0010 distribution end line.
+next(row for row in c.EXPECTED if row['rule'] == 'AWS-0010').update(end_line=132)
 
 
 def projection():
