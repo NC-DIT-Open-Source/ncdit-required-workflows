@@ -21,6 +21,7 @@ CURRENT = {**BASE, **F['sources']}
 c.SOURCES = {path: c.sha(body.encode()) for path, body in CURRENT.items()}
 # Historical sources keep their own AWS-0010 distribution end line.
 next(row for row in c.EXPECTED if row['rule'] == 'AWS-0010').update(end_line=132)
+next(row for row in c.EXPECTED if row['rule'] == 'AWS-0010')['occurrences'][0].update(start_line=112, end_line=132)
 
 
 def projection():
