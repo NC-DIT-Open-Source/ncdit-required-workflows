@@ -10,10 +10,11 @@ markers stay reserved in `embed.py`, so that block cannot be re-spliced into ano
 
 | File | Role |
 |---|---|
-| `trivy_contract.py` | CyberCoach terminal S3 receiver contract. Canonical source — **edit this**. |
+| `trivy_contract.py` | CyberCoach Trivy policy and its `ACCEPTED` list. Canonical source — **edit this**. |
 | `embed.py` | Inlines `trivy_contract.py` into the workflow, and `--check`s for drift. |
 | `test_embed.py` | Heredoc-escape and marker-collision refusals. |
-| `test_trivy_*.py` | Current and historical Trivy contract tests. |
+| `test_trivy_contract.py` | Trivy policy, accepted-list, runtime and workflow-scope tests. |
+| `fixtures/r26-trivy-10716525352.zip` | Real hosted CyberCoach Trivy artifact used as the positive control. |
 | `test_lint.py` | Dockerfile lint discovery and failure tests. |
 
 ```bash

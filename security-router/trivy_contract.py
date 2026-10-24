@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
-"""Owner-maintained CyberCoach Trivy contract, embedded in the required workflow.
+"""Owner-maintained CyberCoach Trivy policy, embedded in the required workflow.
+
+Policy: run a complete Trivy scan of the PR head and block on every HIGH/CRITICAL
+finding except misconfigurations listed in ACCEPTED, keyed by rule ID and
+repository path with a written justification. No source hashes or line numbers
+are bound, so unrelated IaC edits and moved resources do not need a policy change.
 
 No target-repository Python, configuration, ignore list or classifier is executed.
-A receipt means this scanner contract passed, never AWS delivery/launch readiness.
+A receipt means this scanner policy passed, never AWS delivery/launch readiness.
 """
 from collections import Counter
 import copy
@@ -15,32 +20,44 @@ import shutil
 import stat
 import subprocess
 import tempfile
-from urllib.parse import quote
 
 REPOSITORY = 'NC-DIT-Open-Source/CyberCoach-NC'
 WORKFLOW_REF = 'NC-DIT-Open-Source/ncdit-required-workflows/.github/workflows/pr-security-gate.yml@refs/heads/main'
-CONTRACT = 'ncdit-cybercoach-terminal-s3-receivers-v1'
+CONTRACT = 'ncdit-cybercoach-trivy-policy-v1'
 VERSION = '0.70.0'
 ACTION = 'ed142fd0673e97e23eac54620cfb913e5ce36c25'
 SETUP = '3fb12ec12f41e471780db15c232d5dd185dcb514'
 BINARY = '379d59f24a4a828c55de5f0b91b6805cc35d13580180b658820e648611256166'
 ARCHIVE = '8b4376d5d6befe5c24d503f10ff136d9e0c49f9127a4279fd110b727929a5aa9'
-# Exact reviewed source bodies; retained full467 history and scoped WAF2d7 evidence.
-SOURCES = {'infra/aws/operator-foundations/access-logging.tf': '122dee0c94a8d757ff2263ec1279d614a6c6dce4bf636c787ceb80fefa470cc9', 'infra/aws/modules/audit-foundation/receivers.tf': 'a545aa8d4e84d179796c77e81688fc8a4b513479c72d9245c4cdda8407d5f6d8', 'infra/aws/modules/public-frontdoor/main.tf': '448cdcb912a62a879007e982675621bb446f2978060fe4065867a5dd029fa90d', 'infra/aws/modules/records/operator-tests/composed/main.tf': 'af35d548780a3dcd2ff99c47f18d8ae3d8c0035dffc91e6e28f66a02b250bd4e', 'infra/aws/public-frontdoor/main.tf': '6df6db6d776b7360a82b410adc87a164f359c82af6aeff385992c15e47512004', 'infra/aws/modules/origin-authentication/main.tf': 'ea04621eeb448575338f4b68d8e8b89d0b6a865a52fef0259fa5289921328f15', 'infra/aws/origin-authentication/main.tf': 'e91d3579d779d12b1993471c2d5e0f8297ca3b7163032fd872ffb5b1efe6de2d', 'infra/aws/operator-database/stores.tf': '1585a268567f1d14d9b4f3cab1b2659212461c30900774f47e9e78df20bb014d', 'infra/aws/modules/public-frontdoor/dev-state-network.tf': '76db73effeb1c484d21dea5a7b40a2314a7b0792ed215461e0e5f5ed772d0551', 'infra/aws/modules/public-frontdoor/dev-state-network.json': '6ae8f23d653f6988db673cdaa238a69f6cf730e9de74d526f074911ae785dce6', 'infra/aws/modules/database-audit-projection/main.tf': '2c916bc130c3b806b417aa458959090d95fe319c91712de5fe2aac96cf0e52fd', 'infra/aws/database-audit/main.tf': '34cdeccfcebe8bd862b841e1d56c3b7a764923469ad72ae40b111a01efc7b4eb', 'infra/aws/operator-database/hosted/stores.tf': 'fbceca6d36ca6c4f5ccca2f56f1c5ca7d271b427139f0e5df964e6d3d1c2a3a3', 'infra/aws/origin-bootstrap/main.tf': 'b218f47e5037131c141a312231e462c271e1a6e75174af6d61f9d5b458567387'}
-# LOW AWS-0066 is visible, not remediated: Lambda@Edge does not support X-Ray.
-# https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-at-edge-function-restrictions.html
-# LOW AWS-0066 on the audit projection remains visible; no X-Ray remediation is claimed.
-# Both MEDIUM AWS-0014 single-region trail findings remain visible.
-# These observations grant no additional HIGH/CRITICAL exception.
-# PROJECTION: two access-logging locations mapped from retained real Trivy 0.70.0; see pr197 fixture.
-EXPECTED = [{'rule': 'AWS-0089', 'severity': 'LOW', 'target': 'modules/audit-foundation/receivers.tf', 'provider': 'AWS', 'service': 's3', 'resource': 'module.audit', 'start_line': 67, 'end_line': 81, 'occurrences': [{'resource': 'module.audit', 'filename': 'modules/records/operator-tests/composed/main.tf', 'start_line': 11, 'end_line': 43}]}, {'rule': 'AWS-0132', 'severity': 'HIGH', 'target': 'modules/audit-foundation/receivers.tf', 'provider': 'AWS', 'service': 's3', 'resource': 'module.audit', 'start_line': 103, 'end_line': 110, 'occurrences': [{'resource': 'module.audit', 'filename': 'modules/records/operator-tests/composed/main.tf', 'start_line': 11, 'end_line': 43}]}, {'rule': 'AWS-0066', 'severity': 'LOW', 'target': 'modules/database-audit-projection/main.tf', 'provider': 'AWS', 'service': 'lambda', 'resource': 'module.projection', 'start_line': 117, 'end_line': 135, 'occurrences': [{'resource': 'module.projection', 'filename': 'database-audit/main.tf', 'start_line': 80, 'end_line': 89}]}, {'rule': 'AWS-0066', 'severity': 'LOW', 'target': 'modules/origin-authentication/main.tf', 'provider': 'AWS', 'service': 'lambda', 'resource': 'module.origin_authentication', 'start_line': 71, 'end_line': 91, 'occurrences': [{'resource': 'module.origin_authentication', 'filename': 'origin-authentication/main.tf', 'start_line': 37, 'end_line': 52}]}, {'rule': 'AWS-0010', 'severity': 'MEDIUM', 'target': 'modules/public-frontdoor/main.tf', 'provider': 'AWS', 'service': 'cloudfront', 'resource': 'module.public_frontdoor', 'start_line': 70, 'end_line': 154, 'occurrences': [{'resource': 'module.public_frontdoor', 'filename': 'public-frontdoor/main.tf', 'start_line': 112, 'end_line': 132}]}, {'rule': 'AWS-0014', 'severity': 'MEDIUM', 'target': 'operator-database/hosted/stores.tf', 'provider': 'AWS', 'service': 'cloudtrail', 'resource': 'aws_cloudtrail.database[0]', 'start_line': 172, 'end_line': 172, 'occurrences': [{'resource': 'aws_cloudtrail.database[0]', 'filename': 'operator-database/hosted/stores.tf', 'start_line': 165, 'end_line': 185}]}, {'rule': 'AWS-0014', 'severity': 'MEDIUM', 'target': 'operator-database/stores.tf', 'provider': 'AWS', 'service': 'cloudtrail', 'resource': 'aws_cloudtrail.database[0]', 'start_line': 176, 'end_line': 176, 'occurrences': [{'resource': 'aws_cloudtrail.database[0]', 'filename': 'operator-database/stores.tf', 'start_line': 169, 'end_line': 199}]}, {'rule': 'AWS-0089', 'severity': 'LOW', 'target': 'operator-foundations/access-logging.tf', 'provider': 'AWS', 'service': 's3', 'resource': 'aws_s3_bucket.access_logs', 'start_line': 61, 'end_line': 68, 'occurrences': []}, {'rule': 'AWS-0132', 'severity': 'HIGH', 'target': 'operator-foundations/access-logging.tf', 'provider': 'AWS', 'service': 's3', 'resource': 'aws_s3_bucket_server_side_encryption_configuration.access_logs', 'start_line': 90, 'end_line': 101, 'occurrences': []}, {'rule': 'AWS-0065', 'severity': 'MEDIUM', 'target': 'origin-bootstrap/main.tf', 'provider': 'AWS', 'service': 'kms', 'resource': 'aws_kms_key.credential', 'start_line': 153, 'end_line': 153, 'occurrences': [{'resource': 'aws_kms_key.credential', 'filename': 'origin-bootstrap/main.tf', 'start_line': 146, 'end_line': 191}]}]
+IAC_ROOT = 'infra/aws/'
+# Accepted HIGH/CRITICAL misconfigurations. Only Trivy misconfiguration findings can
+# be accepted; vulnerabilities, secrets and licenses at HIGH/CRITICAL always block.
+# An entry covers every finding of that rule in that file, so keep paths narrow.
+SSE_S3_LOG_RECEIVER = (
+    'Terminal S3 server-access-log receiver. AWS supports only SSE-S3 default encryption '
+    'on server access logging destination buckets; SSE-KMS is not supported there, so '
+    'the customer-managed-key requirement cannot be met. The bucket logs nowhere else '
+    '(AWS-0089 stays visible). '
+    'https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-server-access-logging.html')
+ACCEPTED = (
+    dict(rule='AWS-0132', path='infra/aws/modules/audit-foundation/receivers.tf',
+         justification=SSE_S3_LOG_RECEIVER),
+    dict(rule='AWS-0132', path='infra/aws/operator-foundations/access-logging.tf',
+         justification=SSE_S3_LOG_RECEIVER),
+)
 SEVERITIES = ('UNKNOWN', 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL')
+BLOCKING = ('HIGH', 'CRITICAL')
 KINDS = ('Vulnerabilities', 'Misconfigurations', 'Secrets', 'Licenses')
 RESULT_KEYS = {'Target', 'Class', 'Type', 'Packages', 'MisconfSummary', *KINDS}
+RULE = r'[A-Z][A-Z0-9]*-[0-9]{4,}'
 
 
 class _GuardFailure(ValueError):
     """A failed constant-label guard from this trusted module."""
+
+    def __init__(self, code, details=None):
+        super().__init__(code)
+        self.details = details
 
 
 def need(value, code):
@@ -93,6 +110,21 @@ def integer(value, minimum=0):
     return value
 
 
+def accepted_index(entries=None):
+    """Validate the accepted list and index it by (rule, path)."""
+    index = {}
+    for entry in ACCEPTED if entries is None else entries:
+        need(isinstance(entry, dict) and set(entry) == {'rule', 'path', 'justification'}, 'accepted-list')
+        need(full(entry['rule'], RULE), 'accepted-list')
+        relative(entry['path'])
+        need(isinstance(entry['justification'], str) and len(entry['justification'].strip()) >= 40,
+             'accepted-list')
+        key = (entry['rule'], entry['path'])
+        need(key not in index, 'accepted-list')
+        index[key] = entry['justification']
+    return index
+
+
 def environment(env):
     # Allowlist rather than passing inherited TRIVY_*, Git config, cloud credentials,
     # Python paths, tokens or language package-manager configuration to the scanner.
@@ -120,6 +152,7 @@ def context(env):
 
 
 def source(root, expected_head, env):
+    """Bind the scan to a clean checkout of the event head, without pinning file bytes."""
     root = Path(root).absolute()
     need(not root.is_symlink(), 'linked-checkout')
     def git(*args, exact=False):
@@ -135,44 +168,17 @@ def source(root, expected_head, env):
     need(not git('status', '--porcelain=v1', '--untracked-files=all', '--ignored=matching'), 'dirty-checkout')
     need(all(line.split()[0] in ('100644', '100755') for line in git('ls-files', '-s').splitlines()),
          'checkout-links-or-submodules')
-    hashes = {}
-    for name, expected in SOURCES.items():
-        raw = regular(root / name, 1024 * 1024)
-        need(sha(raw) == expected, 'reviewed-source-hash')
-        entry = git('ls-files', '-s', '--', name).split()
-        need(len(entry) == 4 and entry[0] == '100644' and entry[2] == '0' and entry[3] == name, 'source-git-mode')
-        hashes[name] = sha(raw)
-    return dict(commit=commit, tree=tree, clean=True, source_sha256=hashes)
+    iac = root / IAC_ROOT
+    need(iac.is_dir() and not iac.is_symlink(), 'missing-iac-root')
+    return dict(commit=commit, tree=tree, clean=True)
 
 
-def normalized(result, finding, prefix):
-    need(result['Class'] == 'config' and result['Type'] == 'terraform', 'iac-result-type')
-    need(finding.get('Status') == 'FAIL' and finding.get('Type') == 'Terraform Security Check', 'iac-status-type')
-    cause = finding['CauseMetadata']
-    need(isinstance(cause, dict) and set(cause) <= {'Provider', 'Service', 'Resource', 'StartLine', 'EndLine', 'Occurrences', 'Code'}, 'cause-schema')
-    def path(value):
-        value = relative(value)
-        if prefix:
-            need(value.startswith(prefix), 'iac-path-prefix')
-            value = relative(value[len(prefix):])
-        return value
-    rule = finding['ID']
-    service = cause['Service']
-    need(finding.get('Namespace') == 'builtin.aws.' + service + '.' + rule.lower().replace('-', '') and
-         finding.get('Query') == 'data.' + finding['Namespace'] + '.deny', 'iac-builtin-rule')
-    occurrences = cause.get('Occurrences', [])
-    need(isinstance(occurrences, list), 'occurrences-schema')
-    result_occurrences = []
-    for o in occurrences:
-        need(set(o) == {'Resource', 'Filename', 'Location'} and set(o['Location']) == {'StartLine', 'EndLine'}, 'occurrence-schema')
-        result_occurrences.append(dict(resource=o['Resource'], filename=path(o['Filename']),
-            start_line=integer(o['Location']['StartLine'], 1), end_line=integer(o['Location']['EndLine'], 1)))
-    return dict(rule=rule, severity=finding['Severity'], target=path(result['Target']),
-        provider=cause['Provider'], service=service, resource=cause['Resource'],
-        start_line=integer(cause['StartLine'], 1), end_line=integer(cause['EndLine'], 1), occurrences=result_occurrences)
+def report(value, prefix, accepted, config_only=False):
+    """Validate one Trivy JSON report and apply the accepted-findings policy.
 
-
-def report(value, prefix, config_only=False):
+    `prefix` turns report targets into repository paths: '' for the repository
+    scan, IAC_ROOT for the configuration scan rooted there.
+    """
     need(isinstance(value, dict) and value.get('SchemaVersion') == 2 and
          value.get('Trivy', {}).get('Version') == VERSION and
          value.get('ArtifactType') == ('filesystem' if config_only else 'repository'), 'report-schema')
@@ -183,11 +189,11 @@ def report(value, prefix, config_only=False):
              full(value.get('Metadata', {}).get('Commit'), '[a-f0-9]{40}'), 'report-repository')
     results = value.get('Results')
     need(isinstance(results, list) and results, 'missing-results')
-    counts = Counter(); iac = []; blockers = []; successes = 0
+    counts = Counter(); misconfigurations = []; accepted_hits = []; blockers = []; successes = 0
     seen = set()
     for r in results:
         need(isinstance(r, dict) and set(r) <= RESULT_KEYS, 'result-schema')
-        relative(r['Target'])
+        path = relative(prefix + relative(r['Target']))
         identity = (r['Target'], r['Class'], r.get('Type'))
         need(identity not in seen, 'duplicate-result'); seen.add(identity)
         need(r['Class'] in ('config', 'lang-pkgs', 'os-pkgs', 'secret', 'license', 'license-file'), 'result-class')
@@ -197,6 +203,7 @@ def report(value, prefix, config_only=False):
             summary = r.get('MisconfSummary')
             need(isinstance(summary, dict) and set(summary) <= {'Successes', 'Failures', 'Exceptions'}, 'misconf-summary')
             successes += integer(summary['Successes'])
+            # Trivy exceptions are suppressions; none can come from this trusted invocation.
             need(integer(summary.get('Exceptions', 0)) == 0, 'suppressed-misconfigurations')
             need(integer(summary['Failures']) == len(r.get('Misconfigurations', [])), 'misconf-summary-count')
         for kind in KINDS:
@@ -211,148 +218,41 @@ def report(value, prefix, config_only=False):
                 need(severity in (*SEVERITIES, 'UNRANKED') and
                      (severity != 'UNRANKED' or kind == 'Licenses'), 'finding-severity')
                 counts[kind + '/' + severity] += 1
-                if kind == 'Misconfigurations' and r.get('Type') != 'terraform':
-                    # These observed MEDIUM checks remain in counts and SARIF. This
-                    # is not a generic non-Terraform warning or receiver exception.
-                    need(not config_only and r['Class'] == 'config' and
-                         r.get('Type') == 'dockerfile' and r['Target'] in
-                         ('Dockerfile', 'Dockerfile.grants', 'Dockerfile.initializer') and
-                         len(findings) == 1 and f.get('ID') == 'DS-0013' and
-                         severity == 'MEDIUM' and f.get('Status') == 'FAIL' and
-                         f.get('Type') == 'Dockerfile Security Check' and
-                         f.get('Namespace') == 'builtin.dockerfile.DS013' and
-                         f.get('Query') == 'data.' + f['Namespace'] + '.deny',
-                         'retained-dockerfile-finding')
-                if kind == 'Misconfigurations' and r.get('Type') == 'terraform':
-                    item = normalized(r, f, prefix); iac.append(item)
-                    accepted = item in EXPECTED and item['rule'] == 'AWS-0132' and severity == 'HIGH'
-                else:
-                    accepted = False
-                if severity in ('HIGH', 'CRITICAL') and not accepted:
-                    # Do not copy secret contents into the receipt/log.
-                    blockers.append(dict(kind=kind, severity=severity, target=r['Target']))
-    need(successes > 0, 'no-evaluated-configuration-successes')
-    need(Counter(map(canonical, iac)) == Counter(map(canonical, EXPECTED)), 'exact-iac-inventory')
-    return dict(counts=dict(sorted(counts.items())), iac=iac, blockers=blockers, configuration_successes=successes)
-
-
-def sarif_projection(fs, with_rules=False):
-    """Semantic result multiset of the pinned Trivy 0.70 repository converter.
-
-    One finding produces one result, possibly with several package locations.
-    Keep repeated findings AND repeated locations; neither is a set. Rule
-    descriptions are shared by ID, so per-result severity/message is authoritative.
-    """
-    result = Counter()
-    rules = {}
-    location_cache = {}
-    levels = dict(CRITICAL='error', HIGH='error', MEDIUM='warning', LOW='note', UNKNOWN='note')
-    scores = dict(CRITICAL='9.5', HIGH='8.0', MEDIUM='5.5', LOW='2.0')
-    names = {'os-pkgs': 'OsPackageVulnerability', 'lang-pkgs': 'LanguageSpecificPackageVulnerability',
-             'config': 'Misconfiguration', 'secret': 'Secret', 'license': 'License', 'license-file': 'License'}
-    def string(obj, key, required=False):
-        value = obj.get(key, '')
-        need(isinstance(value, str) and (value or not required), 'sarif-json-string')
-        return value
-    def locations(path, spans, message):
-        uri = quote(relative(path), safe="/:@!$&'()*+,;=-._~%?#")
-        rows = []
-        for span in spans or [dict(StartLine=1, EndLine=1)]:
-            start, end = span.get('StartLine', 0), span.get('EndLine', 0)
-            integer(start); integer(end)
-            if start == end == 0:
-                start = end = 1
-            need(start >= 1 and end >= start, 'sarif-json-region')
-            rows.append(dict(physicalLocation=dict(artifactLocation=dict(uri=uri, uriBaseId='ROOTPATH'),
-                region=dict(startLine=start, endLine=end, startColumn=1, endColumn=1)),
-                message=dict(text=message)))
-        return sorted(map(canonical, rows))
-    for r in fs['Results']:
-        target = r['Target']
-        # The admitted artifact is a repository, not an OCI image. OS package
-        # targets may append a distro annotation; image-name rewriting is out
-        # of this filesystem contract and must never guess an alternate path.
-        path = re.sub(r'\s*\(.*?\).*$', '', target) if r['Class'] == 'os-pkgs' else target
-        for kind in KINDS:
-            for f in r.get(kind, []):
-                severity = '' if kind == 'Licenses' and f.get('Severity') is None else string(f, 'Severity')
-                level = levels.get(severity, 'none')
-                score = scores.get(severity, '0.0')
-                spans = []; location_message = ''; artifact = path
-                if kind == 'Vulnerabilities':
-                    rule = string(f, 'VulnerabilityID', True)
-                    package = string(f, 'PkgName', True); version = string(f, 'InstalledVersion', True)
-                    artifact = string(f, 'PkgPath') or path
-                    if r['Class'] == 'os-pkgs':
-                        artifact = re.sub(r'\s*\(.*?\).*$', '', artifact)
-                    cache_key = (artifact, package, version)
-                    if cache_key not in location_cache:
-                        packages = r.get('Packages', [])
-                        need(isinstance(packages, list), 'sarif-json-packages')
-                        for p in packages:
-                            need(isinstance(p, dict), 'sarif-json-package')
-                            if p.get('Name') == package and p.get('Version') == version:
-                                spans = p.get('Locations', [])
-                                need(isinstance(spans, list) and all(isinstance(s, dict) for s in spans), 'sarif-json-locations')
-                                location_cache[cache_key] = spans
-                                break
-                    spans = location_cache.get(cache_key, [])
-                    location_message = f'{artifact}: {package}@{version}'
-                    url = string(f, 'PrimaryURL')
-                    cvss = f.get('CVSS', {}).get(f.get('SeveritySource', ''), {})
-                    need(isinstance(cvss, dict), 'sarif-json-cvss')
-                    v3 = cvss.get('V3Score', 0)
-                    need(type(v3) in (int, float) and 0 <= v3 <= 10, 'sarif-json-cvss-score')
-                    if v3:
-                        score = f'{v3:.1f}'
-                    message = (f'Package: {package}\nInstalled Version: {version}\nVulnerability {rule}\n'
-                               f'Severity: {severity}\nFixed Version: {string(f, "FixedVersion")}\nLink: [{rule}]({url})')
-                elif kind == 'Misconfigurations':
-                    rule = string(f, 'ID', True); spans = [f['CauseMetadata']]
-                    artifact = target; location_message = target
-                    message = (f'Artifact: {target}\nType: {string(r, "Type")}\nVulnerability {rule}\n'
-                               f'Severity: {severity}\nMessage: {string(f, "Message")}\nLink: [{rule}]({string(f, "PrimaryURL")})')
+                rule = None
+                if kind == 'Misconfigurations':
+                    need(r['Class'] == 'config' and full(f.get('ID'), RULE) and
+                         f.get('Status') == 'FAIL', 'misconfiguration-identity')
+                    rule = f['ID']
+                    misconfigurations.append(dict(rule=rule, severity=severity, path=path, type=r.get('Type')))
+                elif kind == 'Vulnerabilities':
+                    rule = f.get('VulnerabilityID')
                 elif kind == 'Secrets':
-                    rule = string(f, 'RuleID', True); spans = [f]; location_message = path
-                    message = (f'Artifact: {target}\nType: {string(r, "Type")}\nSecret {string(f, "Title")}\n'
-                               f'Severity: {severity}\nMatch: {string(f, "Match")}')
+                    rule = f.get('RuleID')
+                if severity not in BLOCKING:
+                    continue
+                if kind == 'Misconfigurations' and (rule, path) in accepted:
+                    accepted_hits.append(dict(rule=rule, severity=severity, path=path))
                 else:
-                    package = string(f, 'PkgName'); name = string(f, 'Name', True)
-                    rule = package + ':' + name
-                    message = (f'Artifact: {target}\nLicense {name}\nPkgName: {package}\n'
-                               f' Classification: {string(f, "Category")}\n Path: {string(f, "FilePath")}')
-                result[canonical(dict(ruleId=rule, level=level, message=message,
-                    locations=locations(artifact, spans, location_message)))] += 1
-                # AddRule reuses an ID and updates its metadata on each visit:
-                # the last finding wins, even when individual severities differ.
-                rules[rule] = dict(name=names[r['Class']], level=level, score=score,
-                    tags=[{'Vulnerabilities': 'vulnerability', 'Misconfigurations': 'misconfiguration',
-                           'Secrets': 'secret', 'Licenses': 'license'}[kind], 'security', severity])
-    return (result, rules) if with_rules else result
+                    # Identity only: never copy secret matches or code into the receipt/log.
+                    blockers.append(dict(kind=kind, severity=severity, path=path,
+                                         rule=rule if isinstance(rule, str) else None))
+    need(successes > 0, 'no-evaluated-configuration-successes')
+    return dict(counts=dict(sorted(counts.items())), misconfigurations=misconfigurations,
+                accepted=accepted_hits, blockers=blockers, configuration_successes=successes)
 
 
-def sarif_correspondence(fs, sarif, conversion_input=None):
+def iac_keys(rows):
+    return Counter((m['rule'], m['severity'], m['path']) for m in rows if m['path'].startswith(IAC_ROOT))
+
+
+def sarif_check(sarif):
     need(isinstance(sarif, dict) and sarif.get('version') == '2.1.0' and
          isinstance(sarif.get('runs'), list) and len(sarif['runs']) == 1, 'sarif-schema')
     run = sarif['runs'][0]
     need(isinstance(run, dict), 'sarif-run')
     tool = run.get('tool')
-    need(isinstance(tool, dict), 'sarif-tool')
-    driver = tool.get('driver')
-    need(isinstance(driver, dict) and driver.get('name') == 'Trivy' and
-         driver.get('version') == VERSION, 'sarif-tool')
-    rules = driver.get('rules')
-    need(isinstance(rules, list) and all(isinstance(r, dict) and isinstance(r.get('id'), str) and r['id'] for r in rules), 'sarif-rules')
-    need(len({r['id'] for r in rules}) == len(rules), 'sarif-duplicate-rule')
-    expected, expected_rules = sarif_projection(fs, with_rules=True)
-    need({r['id'] for r in rules} == set(expected_rules), 'sarif-rule-inventory')
-    for rule in rules:
-        want = expected_rules[rule['id']]
-        props = rule.get('properties', {})
-        need(rule.get('name') == want['name'] and
-             rule.get('defaultConfiguration') == {'level': want['level']} and
-             isinstance(props, dict) and props.get('security-severity') == want['score'] and
-             props.get('tags') == want['tags'] and props.get('precision') == 'very-high', 'sarif-rule-severity')
+    need(isinstance(tool, dict) and isinstance(tool.get('driver'), dict) and
+         tool['driver'].get('name') == 'Trivy' and tool['driver'].get('version') == VERSION, 'sarif-tool')
     invocations = run.get('invocations', [])
     need(isinstance(invocations, list), 'sarif-invocations')
     for invocation in invocations:
@@ -360,102 +260,63 @@ def sarif_correspondence(fs, sarif, conversion_input=None):
              'sarif-failed-invocation')
         if 'exitCode' in invocation:
             need(type(invocation['exitCode']) is int and invocation['exitCode'] == 0, 'sarif-invocation-exit')
-        for name in ('toolExecutionNotifications', 'toolConfigurationNotifications'):
-            notes = invocation.get(name, [])
-            need(isinstance(notes, list) and all(isinstance(n, dict) and n.get('level') != 'error' for n in notes),
-                 'sarif-error-notification')
-    # Trivy convert bases ROOTPATH on the input JSON filename, not ArtifactName.
-    # Bind that representation to the actual convert argv at the live boundary.
-    bases = run.get('originalUriBaseIds')
-    need(isinstance(bases, dict) and set(bases) == {'ROOTPATH'} and
-         isinstance(bases['ROOTPATH'], dict) and set(bases['ROOTPATH']) == {'uri'} and
-         isinstance(bases['ROOTPATH']['uri'], str) and bases['ROOTPATH']['uri'].startswith('file:///') and
-         bases['ROOTPATH']['uri'].endswith('/'), 'sarif-uri-base')
-    if conversion_input is not None:
-        need(Path(conversion_input).is_absolute() and run.get('originalUriBaseIds') ==
-             {'ROOTPATH': {'uri': 'file://' + str(conversion_input) + '/'}}, 'sarif-conversion-input')
     results = run.get('results')
-    need(isinstance(results, list) and len(results) >= len(EXPECTED), 'sarif-results')
-    observed = Counter()
+    need(isinstance(results, list), 'sarif-results')
     for r in results:
-        need(isinstance(r, dict) and set(r) == {'ruleId', 'ruleIndex', 'level', 'message', 'locations'}, 'sarif-result-structure')
-        index = integer(r['ruleIndex'])
-        need(index < len(rules) and r['ruleId'] == rules[index]['id'], 'sarif-rule-index')
-        need(r['level'] in ('error', 'warning', 'note', 'none') and
-             isinstance(r['message'], dict) and set(r['message']) == {'text'} and
-             isinstance(r['message']['text'], str), 'sarif-result-message-level')
-        locs = r['locations']
-        need(isinstance(locs, list) and locs, 'sarif-result-locations')
-        for loc in locs:
-            need(isinstance(loc, dict) and set(loc) == {'physicalLocation', 'message'}, 'sarif-location')
-            physical = loc['physicalLocation']
-            need(isinstance(physical, dict) and set(physical) == {'artifactLocation', 'region'}, 'sarif-physical-location')
-            region = physical['region']
-            need(isinstance(region, dict) and set(region) == {'startLine', 'endLine', 'startColumn', 'endColumn'}, 'sarif-region')
-            start = integer(region['startLine'], 1); end = integer(region['endLine'], 1)
-            need(end >= start and type(region['startColumn']) is int and region['startColumn'] == 1 and
-                 type(region['endColumn']) is int and region['endColumn'] == 1, 'sarif-region-bounds')
-        observed[canonical(dict(ruleId=r['ruleId'], level=r['level'], message=r['message']['text'],
-            locations=sorted(map(canonical, locs))))] += 1
-    need(observed == expected, 'sarif-semantic-multiset')
+        need(isinstance(r, dict) and isinstance(r.get('ruleId'), str) and
+             r.get('level') in ('error', 'warning', 'note', 'none') and
+             isinstance(r.get('locations'), list) and r['locations'], 'sarif-result-structure')
 
 
-def classify(fs, config, sarif, conversion_input=None):
-    whole = report(fs, 'infra/aws/')
-    scoped = report(config, '', config_only=True)
-    need(Counter(map(canonical, whole['iac'])) == Counter(map(canonical, scoped['iac'])), 'paired-iac-projection')
-    need(not whole['blockers'] and not scoped['blockers'], 'unaccepted-high-critical')
-    sarif_correspondence(fs, sarif, conversion_input)
-    # Conversion is from this exact raw JSON, never from filtered findings.
+def sarif_key(result):
+    """(ruleId, uri) for a single-location error result, else None."""
+    locations = result['locations']
+    if result['level'] != 'error' or len(locations) != 1:
+        return None
+    uri = locations[0].get('physicalLocation', {}).get('artifactLocation', {}).get('uri')
+    return (result['ruleId'], uri) if isinstance(uri, str) else None
+
+
+def classify(fs, config, sarif, entries=None):
+    accepted = accepted_index(entries)
+    whole = report(fs, '', accepted)
+    scoped = report(config, IAC_ROOT, accepted, config_only=True)
+    # The two scans must agree on which IaC rules fire in which files, independent of lines.
+    need(iac_keys(whole['misconfigurations']) == iac_keys(scoped['misconfigurations']), 'paired-iac-projection')
+    sarif_check(sarif)
+    blockers = whole['blockers'] + [b for b in scoped['blockers'] if b not in whole['blockers']]
+    if blockers:
+        raise _GuardFailure('unaccepted-high-critical', blockers)
+    used = {(a['rule'], a['path']) for a in whole['accepted']}
     return dict(finding_counts_by_kind_and_severity=whole['counts'],
-                iac_findings=whole['iac'], configuration_successes=whole['configuration_successes'],
-                accepted_high_findings=[x for x in whole['iac'] if x['severity'] == 'HIGH'],
+                iac_findings=whole['misconfigurations'],
+                configuration_successes=whole['configuration_successes'],
+                accepted_high_critical_findings=[dict(a, justification=accepted[(a['rule'], a['path'])])
+                                                 for a in whole['accepted']],
+                unused_accepted_entries=[dict(rule=k[0], path=k[1]) for k in accepted if k not in used],
                 unaccepted_high_critical_findings=[])
 
 
-def upload_view(fs, config, sarif, conversion_input=None):
-    """Derive an upload view only after the complete, unchanged raw contract.
+def upload_view(fs, config, sarif, entries=None):
+    """Drop only accepted HIGH/CRITICAL misconfigurations from the uploaded SARIF.
 
-    Match each result through the native converter projection of its exact
-    accepted JSON identity, including its source/caller contract. Keep every
-    other result, its order, and all SARIF metadata verbatim as JSON values.
+    The raw SARIF and JSON reports stay unchanged in the retained evidence.
     """
-    decision = classify(fs, config, sarif, conversion_input)
-    accepted = decision['accepted_high_findings']
-    need(len(accepted) == 2 and all(x['rule'] == 'AWS-0132' for x in accepted),
-         'upload-exact-two-classifications')
-    eligible = {}
-    for result in fs['Results']:
-        if result.get('Type') != 'terraform':
-            continue  # Already validated by classify; retained verbatim in SARIF.
-        for finding in result.get('Misconfigurations', []):
-            identity = normalized(result, finding, 'infra/aws/')
-            if identity not in accepted:
-                continue
-            projection = sarif_projection({'Results': [{
-                'Target': result['Target'], 'Class': result['Class'],
-                'Type': result['Type'], 'Misconfigurations': [finding]}]})
-            need(len(projection) == 1 and sum(projection.values()) == 1,
-                 'upload-single-result-projection')
-            key = next(iter(projection))
-            need(key not in eligible, 'upload-duplicate-classification')
-            eligible[key] = identity
-    need(len(eligible) == 2, 'upload-complete-classification')
+    decision = classify(fs, config, sarif, entries)
+    expected = Counter((a['rule'], a['path']) for a in decision['accepted_high_critical_findings'])
     derived = copy.deepcopy(sarif)
     retained = []
     removed = []
     for index, result in enumerate(sarif['runs'][0]['results']):
-        key = canonical(dict(ruleId=result['ruleId'], level=result['level'],
-            message=result['message']['text'], locations=sorted(map(canonical, result['locations']))))
-        if key in eligible:
-            identity = eligible.pop(key)
-            paths = [identity['target'], *(o['filename'] for o in identity['occurrences'])]
-            removed.append(dict(raw_result_index=index,
-                result_sha256=sha(canonical(result).encode()), classification=identity,
-                source_sha256={'infra/aws/' + p: SOURCES['infra/aws/' + p] for p in paths}))
+        key = sarif_key(result)
+        if key in expected:
+            removed.append(dict(raw_result_index=index, rule=key[0], path=key[1],
+                                result_sha256=sha(canonical(result).encode())))
         else:
             retained.append(copy.deepcopy(result))
-    need(not eligible and len(removed) == 2, 'upload-exact-removal-inventory')
+    # Each accepted JSON finding must map to exactly one SARIF result, so the
+    # filter cannot hide anything the JSON policy did not accept.
+    need(Counter((r['rule'], r['path']) for r in removed) == expected, 'sarif-accepted-correspondence')
     derived['runs'][0]['results'] = retained
     return decision, derived, removed
 
@@ -479,7 +340,7 @@ def commands(binary, root, out, cache):
     return [
         [str(binary), 'fs', *common, '--scanners', 'vuln,misconfig,secret,license', '--secret-config', str(out / 'secret-config.yaml'),
          '--ignore-unfixed', '--format', 'json', '--output', str(out / 'filesystem.json'), str(root)],
-        [str(binary), 'config', *common, '--format', 'json', '--output', str(out / 'config.json'), str(root / 'infra/aws')],
+        [str(binary), 'config', *common, '--format', 'json', '--output', str(out / 'config.json'), str(root / IAC_ROOT.rstrip('/'))],
         [str(binary), 'convert', '--config', '/dev/null', '--format', 'sarif', '--output', str(out / 'trivy.sarif'),
          str(out / 'filesystem.json')],
     ]
@@ -505,16 +366,16 @@ def execute(root, out, env):
             result = subprocess.run(argv, env=environment(env), cwd=root, stdout=stdout, stderr=stderr, timeout=600)
         exits.append(dict(argv=argv, exit_code=result.returncode))
         (out / 'scanner-exits.json').write_text(canonical(exits))
-        # A full scanner failure never becomes a passing classifier decision.
+        # A full scanner failure never becomes a passing policy decision.
         need(result.returncode == 0, 'scanner-nonzero')
         no_policy(cache)
     need(source(root, identity['event_head'], env) == before, 'source-changed-during-scan')
     raw = {name: regular(out / name) for name in ('filesystem.json', 'config.json', 'trivy.sarif')}
     fs, config, sarif = (decode(raw[name]) for name in ('filesystem.json', 'config.json', 'trivy.sarif'))
     need(fs.get('Metadata', {}).get('Commit') == before['commit'], 'report-source-commit')
-    need(fs.get('ArtifactName') == str(root) and config.get('ArtifactName') == str(root / 'infra/aws'),
+    need(fs.get('ArtifactName') == str(root) and config.get('ArtifactName') == str(root / IAC_ROOT.rstrip('/')),
          'report-source-root')
-    decision, derived, removed = upload_view(fs, config, sarif, out / 'filesystem.json')
+    decision, derived, removed = upload_view(fs, config, sarif)
     upload = (canonical(derived) + '\n').encode()
     # Raw SARIF is immutable evidence; never overwrite it or filter JSON scans.
     with (out / 'trivy-upload.sarif').open('xb') as handle:
@@ -523,12 +384,23 @@ def execute(root, out, env):
         raw_result_count=len(sarif['runs'][0]['results']),
         upload_result_count=len(derived['runs'][0]['results']),
         removed_result_count=len(removed), removed_results=removed)
-    return dict(schema='ncdit-trivy-contract-receipt-v2', contract=CONTRACT, status='passed',
-        organization_policy_acceptance='established-for-this-contract', **identity, source=before, scanner=tool,
+    return dict(schema='ncdit-trivy-policy-receipt-v1', contract=CONTRACT, status='passed',
+        organization_policy_acceptance='established-for-this-policy', **identity, source=before, scanner=tool,
         private_cache_path=str(cache), external_policy_files=[], inherited_trivy_configuration='not-forwarded',
         secret_config_sha256=sha(regular(out / 'secret-config.yaml')),
         report_sha256={**{name: sha(data) for name, data in raw.items()}, 'trivy-upload.sarif': sha(upload)},
         sarif_upload=upload_receipt, scanner_exits=exits, **decision)
+
+
+def annotation(blocker):
+    """A workflow-command line whose scanner-derived parts cannot inject other commands."""
+    def data(value):
+        return value.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+    def prop(value):
+        return data(value).replace(':', '%3A').replace(',', '%2C')
+    return ('::error file=' + prop(blocker['path']) + '::' + data(
+        blocker['severity'] + ' ' + blocker['kind'] + ' ' + (blocker['rule'] or 'unidentified') +
+        ' is not in the accepted list'))
 
 
 def main():
@@ -544,19 +416,24 @@ def main():
         receipt = execute(root, out, env)
     except Exception as error:
         guarded = type(error) is _GuardFailure
-        failure = dict(schema='ncdit-trivy-contract-receipt-v2', contract=CONTRACT,
+        failure = dict(schema='ncdit-trivy-policy-receipt-v1', contract=CONTRACT,
             status='blocked', organization_policy_acceptance='not-established',
             error_type='ValueError' if guarded else type(error).__name__)
-        # Emit only these owned, constant labels; never arbitrary exception text.
-        for label in ('reviewed-source-hash', 'exact-iac-inventory', 'unaccepted-high-critical'):
-            if guarded and error.args == (label,):
-                failure['guard_code'] = label
-                break
+        # Emit only owned, constant labels and finding identities; never exception text.
+        if guarded:
+            failure['guard_code'] = error.args[0]
+            print('::error::CyberCoach Trivy policy blocked: ' + error.args[0])
+        if guarded and error.args == ('unaccepted-high-critical',):
+            failure['unaccepted_high_critical_findings'] = error.details
+            for b in error.details:
+                print(annotation(b))
         (out / 'receipt.json').write_text(canonical(failure))
-        print('::error::CyberCoach Trivy contract blocked; inspect retained evidence.')
+        print('::error::CyberCoach Trivy policy blocked; inspect retained evidence.')
         return 1
     (out / 'receipt.json').write_text(canonical(receipt))
-    print('CyberCoach Trivy contract passed; complete findings retained.')
+    for entry in receipt['unused_accepted_entries']:
+        print('::warning::Accepted entry ' + entry['rule'] + ' ' + entry['path'] + ' matched no finding; remove it.')
+    print('CyberCoach Trivy policy passed; complete findings retained.')
     return 0
 
 
