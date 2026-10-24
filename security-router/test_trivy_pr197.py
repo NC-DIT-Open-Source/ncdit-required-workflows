@@ -86,6 +86,8 @@ SOURCES = F['sources']
 c.SOURCES = {p: c.sha(body.encode()) for p, body in SOURCES.items()}
 # Preserve the historical PR197 caller coordinates as well as its source bodies.
 next(row for row in c.EXPECTED if row['rule'] == 'AWS-0010')['occurrences'][0].update(start_line=120, end_line=136)
+# Historical sources keep their own AWS-0010 distribution end line.
+next(row for row in c.EXPECTED if row['rule'] == 'AWS-0010').update(end_line=132)
 CHANGED = {'infra/aws/operator-foundations/access-logging.tf': '122dee0c94a8d757ff2263ec1279d614a6c6dce4bf636c787ceb80fefa470cc9'}
 
 def triple():

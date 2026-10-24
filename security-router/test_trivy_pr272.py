@@ -20,6 +20,8 @@ CURRENT = {**BASE, **F['sources']}
 # Historical PR272 keeps its original exact source and coordinate bindings.
 c.SOURCES = {path: c.sha(body.encode()) for path, body in CURRENT.items()}
 next(row for row in c.EXPECTED if row['rule'] == 'AWS-0010')['occurrences'][0].update(start_line=112, end_line=129)
+# Historical sources keep their own AWS-0010 distribution end line.
+next(row for row in c.EXPECTED if row['rule'] == 'AWS-0010').update(end_line=132)
 
 
 def projection():

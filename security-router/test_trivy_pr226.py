@@ -20,6 +20,8 @@ CURRENT = {**BASE, **F['sources']}
 # This historical fixture retains its exact original source and caller bindings.
 c.SOURCES = {p: c.sha(body.encode()) for p, body in CURRENT.items()}
 next(row for row in c.EXPECTED if row['rule'] == 'AWS-0010')['occurrences'][0].update(start_line=120, end_line=136)
+# Historical sources keep their own AWS-0010 distribution end line.
+next(row for row in c.EXPECTED if row['rule'] == 'AWS-0010').update(end_line=132)
 
 
 class SourcePR226(unittest.TestCase):
