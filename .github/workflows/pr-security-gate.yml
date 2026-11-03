@@ -97,12 +97,26 @@ jobs:
           category: trivy
 
       # Policy code comes from THIS trusted workflow, never the checked-out PR.
+      # setup-trivy downloads from get.trivy.dev, which can stop resolving. Install the
+      # official GitHub release archive at its reviewed checksum instead; the policy step
+      # still verifies the installed binary hash and version.
       - name: CyberCoach pinned Trivy setup
         if: github.repository == 'NC-DIT-Open-Source/CyberCoach-NC'
-        uses: aquasecurity/setup-trivy@3fb12ec12f41e471780db15c232d5dd185dcb514 # v0.2.6
-        with:
-          version: v0.70.0
-          cache: false
+        shell: bash
+        env:
+          CC_TRIVY_VERSION: 0.70.0
+          CC_TRIVY_ARCHIVE_SHA256: 8b4376d5d6befe5c24d503f10ff136d9e0c49f9127a4279fd110b727929a5aa9
+        run: |
+          set -euo pipefail
+          dir="$RUNNER_TEMP/cybercoach-trivy"
+          mkdir -m 700 "$dir"
+          archive="$dir/trivy.tar.gz"
+          curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 --retry 3 -o "$archive" \
+            "https://github.com/aquasecurity/trivy/releases/download/v${CC_TRIVY_VERSION}/trivy_${CC_TRIVY_VERSION}_Linux-64bit.tar.gz"
+          echo "${CC_TRIVY_ARCHIVE_SHA256}  ${archive}" | sha256sum --check --strict -
+          tar -xzf "$archive" -C "$dir" trivy
+          rm "$archive"
+          echo "$dir" >> "$GITHUB_PATH"
 
       # Accepted HIGH/CRITICAL misconfigurations are keyed by rule ID + path in ACCEPTED below.
       - name: CyberCoach full scan and Trivy policy check
@@ -146,7 +160,7 @@ jobs:
           CONTRACT = 'ncdit-cybercoach-trivy-policy-v1'
           VERSION = '0.70.0'
           ACTION = 'ed142fd0673e97e23eac54620cfb913e5ce36c25'
-          SETUP = '3fb12ec12f41e471780db15c232d5dd185dcb514'
+          SETUP = 'github-release-archive-v1'
           BINARY = '379d59f24a4a828c55de5f0b91b6805cc35d13580180b658820e648611256166'
           ARCHIVE = '8b4376d5d6befe5c24d503f10ff136d9e0c49f9127a4279fd110b727929a5aa9'
           IAC_ROOT = 'infra/aws/'
