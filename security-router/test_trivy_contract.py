@@ -469,8 +469,11 @@ class Workflow(unittest.TestCase):
 
     def test_pinned_setup_and_every_action(self):
         setup = next(s for s in self.steps if s['name'] == 'CyberCoach pinned Trivy setup')
-        self.assertEqual(setup['uses'], 'aquasecurity/setup-trivy@'+c.SETUP)
-        self.assertEqual(setup['with'], dict(version='v'+c.VERSION, cache=False))
+        self.assertNotIn('uses', setup)
+        self.assertEqual(setup['env'], dict(CC_TRIVY_VERSION=c.VERSION, CC_TRIVY_ARCHIVE_SHA256=c.ARCHIVE))
+        self.assertIn('https://github.com/aquasecurity/trivy/releases/download/v${CC_TRIVY_VERSION}/', setup['run'])
+        self.assertIn('sha256sum --check --strict', setup['run'])
+        self.assertNotIn('get.trivy.dev', setup['run'])
         for line in self.text.splitlines():
             if 'uses:' in line:
                 self.assertRegex(line, r'@[0-9a-f]{40} #')
